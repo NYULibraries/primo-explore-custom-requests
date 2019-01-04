@@ -17,7 +17,37 @@ angular
     delete $httpProvider.defaults.headers.common['X-Requested-With'];
   }])
   .service('customRequestsConfigService', ['primoExploreCustomRequestsConfig', function (config) {
-    return config ? config : console.warn('the constant primoExploreCustomRequestsConfig is not defined');
+    const svc = this;
+
+    if (!config) {
+      console.warn('the constant primoExploreCustomRequestsConfig is not defined');
+      return;
+    }
+
+    // utility function that transforms object values with a provided function
+    const transformValues = (obj, fxn) => Object.keys(obj).reduce((acc, key) => Object.assign(acc, { key: fxn(obj[key]) }), {});
+
+    // original translate function
+    svc.translate = original => original.replace(/\{(.+?)\}/g, (match, p1) => $filter('translate')(p1));
+    // translate all the values in an object
+    svc.translateObject = transformValues(obj, svc.translate);
+
+    // translate the result of a function
+    svc.translateFunction = fxn => (...args) => svc.translate(fxn(args));
+    svc.translateObjectWithFunctions = obj => transformValues(obj, svc.translateFunction);
+
+    Object.freeze(config);
+
+    return Object.freeze({
+      links: config.links.map(translate),
+      linkText: svc.translate(config.linkText),
+      linkGenerators: svc.translateObjectWithFunctions(config.linkGenerators),
+      showLinks: config.showLinks,
+      hideDefaults: config.showDefaults,
+      hideCustom: config.hideCustom,
+      values: config.values,
+    });
+
   }])
   .component('primoExploreCustomRequests', {
     controller: customRequestsController,
@@ -42,7 +72,7 @@ angular
 
         <span ng-if="$ctrl.loggedIn && !$ctrl.user && !$ctrl.userFailure">Retrieving request options...</span>
         <span ng-if="$ctrl.userFailure">Unable to retrieve request options</span>
-        <span ng-if="$ctrl.user && $ctrl.links && $ctrl.links.length === 0">Request not available</span>
+        <span ng-if="$ctrl.user && $ctrl.links && $ctrl.links.length === 0">{{ $ctrl.noLinksMessage || 'Request not available' }}</span>
       </div>
     `
   })
