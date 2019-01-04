@@ -16,7 +16,7 @@ angular
     //that would prevent CORS from working
     delete $httpProvider.defaults.headers.common['X-Requested-With'];
   }])
-  .service('customRequestsConfigService', ['primoExploreCustomRequestsConfig', function (config) {
+  .service('customRequestsConfigService', ['primoExploreCustomRequestsConfig', '$filter', function (config, $filter) {
     const svc = this;
 
     if (!config) {
@@ -37,17 +37,16 @@ angular
     svc.translateObjectWithFunctions = obj => transformValues(obj, svc.translateFunction);
 
     Object.freeze(config);
-
     return Object.freeze({
-      links: config.links.map(translate),
-      linkText: svc.translate(config.linkText),
+      links: config.links.map(svc.translate),
+      linkText: svc.translateObject(config.linkText),
       linkGenerators: svc.translateObjectWithFunctions(config.linkGenerators),
       showLinks: config.showLinks,
-      hideDefaults: config.showDefaults,
+      hideDefault: config.hideDefault,
       hideCustom: config.hideCustom,
       values: config.values,
+      noLinksText: svc.translate(config.noLinksText),
     });
-
   }])
   .component('primoExploreCustomRequests', {
     controller: customRequestsController,
@@ -72,7 +71,7 @@ angular
 
         <span ng-if="$ctrl.loggedIn && !$ctrl.user && !$ctrl.userFailure">Retrieving request options...</span>
         <span ng-if="$ctrl.userFailure">Unable to retrieve request options</span>
-        <span ng-if="$ctrl.user && $ctrl.links && $ctrl.links.length === 0">{{ $ctrl.noLinksMessage || 'Request not available' }}</span>
+        <span ng-if="$ctrl.user && $ctrl.links && $ctrl.links.length === 0">{{ $ctrl.noLinksText || 'Request not available' }}</span>
       </div>
     `
   })

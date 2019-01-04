@@ -65,6 +65,6 @@ export default function prmLocationItemsAfterController(config, $element, custom
   };
 
   ctrl.$onInit = () => {
-    ctrl.noLinksText = config.noLinksMessage;
+    ctrl.noLinksText = config.noLinksText;
   };
 }
