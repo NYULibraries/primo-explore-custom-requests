@@ -30,7 +30,7 @@ angular
     // original translate function
     svc.translate = original => original.replace(/\{(.+?)\}/g, (match, p1) => $filter('translate')(p1));
     // translate all the values in an object
-    svc.translateObject = transformValues(obj, svc.translate);
+    svc.translateObject = obj => transformValues(obj, svc.translate);
 
     // translate the result of a function
     svc.translateFunction = fxn => (...args) => svc.translate(fxn(args));
