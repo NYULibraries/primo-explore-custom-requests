@@ -25,7 +25,7 @@ angular
     }
 
     // utility function that transforms object values with a provided function
-    const transformValues = (obj, fxn) => Object.keys(obj).reduce((acc, key) => Object.assign(acc, { key: fxn(obj[key]) }), {});
+    const transformValues = (obj, fxn) => Object.keys(obj).reduce((acc, key) => Object.assign(acc, { [key]: fxn(obj[key]) }), {});
 
     // original translate function
     svc.translate = original => original.replace(/\{(.+?)\}/g, (match, p1) => $filter('translate')(p1));
@@ -33,14 +33,15 @@ angular
     svc.translateObject = obj => transformValues(obj, svc.translate);
 
     // translate the result of a function
-    svc.translateFunction = fxn => (...args) => svc.translate(fxn(args));
+    svc.translateFunction = fxn => (...args) => svc.translate(fxn(...args));
+    // not in use yet, but perhaps in future iterations
     svc.translateObjectWithFunctions = obj => transformValues(obj, svc.translateFunction);
 
     Object.freeze(config);
     return Object.freeze({
       links: config.links.map(svc.translate),
       linkText: svc.translateObject(config.linkText),
-      linkGenerators: svc.translateObjectWithFunctions(config.linkGenerators),
+      linkGenerators: config.linkGenerators,
       showLinks: config.showLinks,
       hideDefault: config.hideDefault,
       hideCustom: config.hideCustom,
