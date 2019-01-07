@@ -17,7 +17,7 @@ angular
   .service('customLoginService', ['$window', '$http', 'customLoginConfigService', function ($window, $http, config) {
     const svc = this;
     svc.store = {
-      user: { ['bor-status']: '55'},
+      user: undefined,
       login: undefined,
       logout: undefined,
     }

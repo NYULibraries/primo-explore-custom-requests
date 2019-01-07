@@ -24,14 +24,14 @@ export default function prmLocationItemsAfterController(config, $element, custom
     return customLoginService.fetchPDSUser()
       .then(user => {
         const item = ctrl.parentCtrl.item;
-        const { links: linkKeys, showButtons, buttonGenerators } = config;
-        const links = linkKeys.reduce((arr, key) => {
-          const [showButton, buttonGenerator] = [showButtons, buttonGenerators].map(fxn => fxn[key]);
+        const { buttonIds, showButtons, buttonGenerators } = config;
+        const buttons = buttonIds.reduce((arr, id) => {
+          const [showButton, buttonGenerator] = [showButtons, buttonGenerators].map(fxn => fxn[id]);
           const show = showButton({ config, user, item, loggedIn  });
           return arr.concat(show ? [ buttonGenerator({ item, config }) ] : [])
         }, []);
 
-        customRequestService.setState({ links, user });
+        customRequestService.setState({ buttons, user });
       })
       .catch(err => {
         console.error(err);

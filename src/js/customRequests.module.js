@@ -34,7 +34,7 @@ angular
       },
       config,
       {
-        links: config.links.map(svc.translate),
+        buttonIds: config.buttonIds.map(svc.translate),
         noButtonsText: config.noButtonsText ? svc.translate(config.noButtonsText) : 'Request not available',
       }
     );
@@ -48,15 +48,15 @@ angular
     },
     template: `
       <div layout="row" layout-align="center center">
-        <div layout="row" layout-align="center center" ng-repeat="link in $ctrl.links">
-          <button class="button-as-link md-button md-primoExplore-theme md-ink-ripple" type="button" ng-click="$ctrl.handleClick($event, link)"
-            aria-label="Type"><span>{{ link.label }}</span>
+        <div layout="row" layout-align="center center" ng-repeat="button in $ctrl.buttons">
+          <button class="button-as-link md-button md-primoExplore-theme md-ink-ripple" type="button" ng-click="$ctrl.handleClick($event, button)"
+            aria-label="Type"><span>{{ button.label }}</span>
           </button>
           <div class="skewed-divider" ng-if="!$last"></div>
         </div>
         <span ng-if="$ctrl.loggedIn && !$ctrl.user && !$ctrl.userFailure">Retrieving request options...</span>
         <span ng-if="$ctrl.userFailure">Unable to retrieve request options</span>
-        <span ng-if="$ctrl.user && $ctrl.links && $ctrl.links.length === 0">{{ $ctrl.noButtonsText }}</span>
+        <span ng-if="$ctrl.user && $ctrl.buttons && $ctrl.buttons.length === 0">{{ $ctrl.noButtonsText }}</span>
       </div>
     `
   })

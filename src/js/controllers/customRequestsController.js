@@ -11,8 +11,8 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
   ctrl.refreshAvailability = () => {
     $scope.$applyAsync(() => {
-      const { user, userFailure, links, loggedIn } = customRequestService.getState();
-      Object.assign(ctrl, { user, userFailure, links, loggedIn });
+      const { user, userFailure, buttons, loggedIn } = customRequestService.getState();
+      Object.assign(ctrl, { user, userFailure, buttons, loggedIn });
     });
   }
 
