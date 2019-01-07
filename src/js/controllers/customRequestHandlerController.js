@@ -21,7 +21,7 @@ export default function prmLocationItemsAfterController(config, $element, custom
     const loggedIn = !ctrl.parentCtrl.userSessionManagerService.isGuest();
     customRequestService.setState({ loggedIn });
 
-    return customLoginService.fetchPDSUser()
+    return (!loggedIn ? Promise.resolve(undefined) : customLoginService.fetchPDSUser())
       .then(user => {
         const item = ctrl.parentCtrl.item;
         const { buttonIds, showButtons, buttonGenerators } = config;

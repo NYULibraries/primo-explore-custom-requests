@@ -29,10 +29,7 @@ angular
         return match ? match[2] : undefined;
       }
 
-      const pdsHandle = getCookie('PDS_HANDLE');
-      if (!pdsHandle) { return Promise.resolve(undefined); }
-
-      store.user = $http.get(`${config.pdsUrl}?${config.pdsUserInfo.queryString}&pds_handle=${pdsHandle}`, {
+      store.user = $http.get(`${config.pdsUrl}?${config.pdsUserInfo.queryString}&pds_handle=${getCookie('PDS_HANDLE')}`, {
           timeout: 6000
         })
         .then(response => {
