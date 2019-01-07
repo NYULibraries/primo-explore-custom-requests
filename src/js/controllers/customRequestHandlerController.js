@@ -21,21 +21,14 @@ export default function prmLocationItemsAfterController(config, $element, custom
     const loggedIn = !ctrl.parentCtrl.userSessionManagerService.isGuest();
     customRequestService.setState({ loggedIn });
 
-    if (!loggedIn) {
-      return Promise.resolve(undefined);
-    }
-
     return customLoginService.fetchPDSUser()
       .then(user => {
         const item = ctrl.parentCtrl.item;
-        const links = config.links.reduce((arr, link) => {
-          const show = config.showLinks[link]({ config, user, item  });
-          const makeLink = () => ({
-            label: config.linkText[link],
-            href: config.linkGenerators[link]({ item, config })
-          });
-
-          return arr.concat(show ? [ makeLink() ] : [])
+        const { links: linkKeys, showButtons, buttonGenerators } = config;
+        const links = linkKeys.reduce((arr, key) => {
+          const [showButton, buttonGenerator] = [showButtons, buttonGenerators].map(fxn => fxn[key]);
+          const show = showButton({ config, user, item, loggedIn  });
+          return arr.concat(show ? [ buttonGenerator({ item, config }) ] : [])
         }, []);
 
         customRequestService.setState({ links, user });
@@ -52,19 +45,20 @@ export default function prmLocationItemsAfterController(config, $element, custom
     if (ctrl.parentCtrl.currLoc.items !== ctrl.trackedItems) {
       ctrl.trackedItems = ctrl.parentCtrl.currLoc.items;
       ctrl.runAvailabilityCheck().then(() => {
-        const defaultFunction = ({ items }) => Array.apply(null, Array(items.length));
-        const { hideCustom = defaultFunction, hideDefault = defaultFunction } = config;
-        hideDefault({ items: ctrl.trackedItems, config }).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
-        hideCustom({ items: ctrl.trackedItems, config }).forEach((toHide, idx) => toHide ? ctrl.hideCustomRequest(idx) : null)
+        const { hideCustom, hideDefault } = config;
+
+        const props = { items: ctrl.trackedItems, config, loggedIn: customRequestService.getState().loggedIn }
+        hideDefault(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
+        hideCustom(props).forEach((toHide, idx) => toHide ? ctrl.hideCustomRequest(idx) : null)
         // double-action required because of wonkiness when moving among locations
-        hideDefault({ items: ctrl.trackedItems, config }).forEach((toHide, idx) => !toHide ? ctrl.revealRequest(idx) : null);
-        hideCustom({ items: ctrl.trackedItems, config }).forEach((toHide, idx) => !toHide ? ctrl.revealCustomRequest(idx) : null)
+        hideDefault(props).forEach((toHide, idx) => !toHide ? ctrl.revealRequest(idx) : null);
+        hideCustom(props).forEach((toHide, idx) => !toHide ? ctrl.revealCustomRequest(idx) : null)
         ctrl.hasCheckedReveal = false;
       });
     }
   };
 
   ctrl.$onInit = () => {
-    ctrl.noLinksText = config.noLinksText;
+    ctrl.noButtonsText = config.noButtonsText;
   };
 }

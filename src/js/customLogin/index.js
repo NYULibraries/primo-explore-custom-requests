@@ -17,7 +17,7 @@ angular
   .service('customLoginService', ['$window', '$http', 'customLoginConfigService', function ($window, $http, config) {
     const svc = this;
     svc.store = {
-      user: undefined,
+      user: { ['bor-status']: '55'},
       login: undefined,
       logout: undefined,
     }
@@ -29,7 +29,10 @@ angular
         return match ? match[2] : undefined;
       }
 
-      store.user = $http.get(`${config.pdsUrl}?${config.pdsUserInfo.queryString}&pds_handle=${getCookie('PDS_HANDLE')}`, {
+      const pdsHandle = getCookie('PDS_HANDLE');
+      if (!pdsHandle) { return Promise.resolve(undefined); }
+
+      store.user = $http.get(`${config.pdsUrl}?${config.pdsUserInfo.queryString}&pds_handle=${pdsHandle}`, {
           timeout: 6000
         })
         .then(response => {

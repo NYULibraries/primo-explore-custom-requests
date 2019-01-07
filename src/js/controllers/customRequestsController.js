@@ -1,24 +1,19 @@
-prmLocationItemAfterController.$inject = ['$window', '$scope', 'customRequestService', 'customLoginService']
-export default function prmLocationItemAfterController($window, $scope, customRequestService, customLoginService) {
+prmLocationItemAfterController.$inject = ['$window', '$scope', '$injector', 'customRequestService', ]
+export default function prmLocationItemAfterController($window, $scope, $injector, customRequestService) {
   const ctrl = this;
 
-  ctrl.handleLogin = function (event) {
-    customLoginService.login();
+  ctrl.handleClick = (event, { action, href, label }) => {
     event.stopPropagation();
+    href && $window.open(href);
+    action && action($injector);
+    !(href || action) && console.warn(`Link ${label} has not been assigned either an 'action' or 'href' property`);
   }
 
-  ctrl.open = (href) => $window.open(href)
-
   ctrl.refreshAvailability = () => {
-    const { loggedIn } = customRequestService.getState();
-    Object.assign(ctrl, { loggedIn });
-
-    if (ctrl.loggedIn) {
-      $scope.$applyAsync(() => {
-        const { user, userFailure, links } = customRequestService.getState();
-        Object.assign(ctrl, { user, userFailure, links });
-      });
-    }
+    $scope.$applyAsync(() => {
+      const { user, userFailure, links, loggedIn } = customRequestService.getState();
+      Object.assign(ctrl, { user, userFailure, links, loggedIn });
+    });
   }
 
   ctrl.$doCheck = () => {
