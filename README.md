@@ -53,46 +53,127 @@ See [configuration schema](#configuration-schema)
 ## Configuration Schema
 |name|type|usage|
 |---|---|---|
-`links`| `Array`| List of keys that for conditionally rendered links.
-`linkText` |`Object`| Key-value reference for text to display with custom links. Keys refer to `links`. Values are a `String`.
-`linkGenerators` |`Object`| Key-value reference of functions used generate target urls for custom `links`. Keys refer to `links`. Value is a JavaScript function that takes named parameters `{ item, config }` as arguments. `item` refers to `$ctrl.item` from `<prm-location-items>` controller. `config` refers to the configuration object itelf. Functions should be pure and return a string for the url value.
-`showLinks`|`Object`|  Key-value reference of functions used determine whether a custom link from `links` is rendered. Keys refer to `links`. Value is a JavaScript function that takes named parameters `{ user, item, config }` as arguments. `item` refers to `$ctrl.item` from `<prm-location-items>` controller. `config` refers to the configuration object itelf. Functions should be pure and return a string for the url value. `user` refers to an JavaScript POJO with `id` and `bor-status` parameters (currently only by default). Functions return a `boolean` which determines whether to show (`true`) or hide (`false`) a specific link.
-`hideDefault`| `Function` (optional) | Used to determine where to hide all the default, out-of-the-box request links for specific items within a location. Function takes the named parameters `{ items, config }` as arguments. `items` refers to the `Array` of items in `$ctrl.currLoc.items` from `<prm-location-items>`. Functions should be pure and returns an `Array` of `Boolean`s that correspond to each element in `items`. For example, to hide only the second default action of three items should return `[false, true, false]`. `config` refers to the configuration object itself.
-`hideCustom`| `Function` (optional) | Used to determine where to hide all the custom request links for specific items within a location. Function takes the named parameters `{ items, config }` as arguments. `items` refers to the `Array` of items in `$ctrl.currLoc.items` from `<prm-location-items>`. Functions should be pure and return an `Array` of `Boolean`s that correspond to each element in `items`. For example, to hide only the second custom link of three items should return `[false, true, false]`. `config` refers to the configuration object itself.
-|`noLinksText`|`String` (optional) |Message to show if no links were generated from `linkGenerators`. Default: `Request not available`.
-| `values` | `Object` (optional) | Dictionary used for arbitrary data and utility functionst that may be used in other aspects of your configuration. It is for this reason that a `config` parameter is passed to all functions, so that reusable and testable logic can be referred to throughout the configuration. (e.g. `config.values.functions` can be used as a dictionary of functions with particularly complex logic, which can later be easily referred to for reuse and/or unit-testing).
+`buttonIds`| `Array`| List of keys that for conditionally rendered `buttons`.
+`buttonGenerators` |`Object`| Key-value reference of functions used generate button properties for custom `buttons`.
+`showButtons`|`Object`|  Key-value reference of functions used determine whether a custom link from `buttons` is rendered.
+|`noButtonsText`|`String` (optional) |Message to show if no buttons were generated from `buttonGenerators`. Default: `Request not available`.
+`hideDefaultRequest`| `Function` (optional) | Used to determine whether to hide all the default, out-of-the-box request buttons for specific items within a location. Default: hide none.
+`hideCustomRequest`| `Function` (optional) | Used to determine whether to hide all the custom request buttons for specific items within a location. Default: hide none.
+| `values` | `Object` (optional) | Dictionary used for arbitrary data and utility functions that may be used in other aspects of your configuration.
 
-### Example
+### `config.buttonIds`
+
+*Note*: Has access to custom backoffice values via `{backoffice.key.value}` syntax:
+#### Example
+```js
+{
+  buttons: ['login', 'ezborrow', 'ill', '{item.request.custom}']
+}
+```
+
+### `config.buttonGenerators`
+
+Keys refer to `buttonIds`.
+
+Functions take the following named parameters via a POJO:
+* `item`: `$ctrl.item` object from the `<prm-location-items>` controller
+* `config`: The configuration object itself for internal references.
+
+Functions should be pure and return an `Object` with the following schema:
+
+* `label`: The button text
+* `href`: Opens link in a new window when button is clicked.
+* `action`: Performs custom JS, with access to angular's [`$injector`] (https://docs.angularjs.org/api/auto/service/$injector) object.
 
 ```js
 {
-  links: ['ezborrow', 'ill'],
-  linkGenerators: {
-    ezborrow: ({ item, config }) => {
-      const title = item.pnx.addata.btitle ? item.pnx.addata.btitle[0] : '';
-      const author = item.pnx.addata.au ? item.pnx.addata.au[0] : '';
-      const ti = encodeURIComponent(`ti=${title}`);
-      const au = encodeURIComponent(`au=${author}`);
-      return `${config.values.baseUrls.ezborrow}?query=${ti}+and+${au}`;
+  label: `My button`
+  href: `http://example.com`,
+  action: ($injector) => $injector.get('$window').alert('The button was pushed!'),
+}
+```
+For example:
+```js
+{
+  buttonGenerators: {
+      ezborrow: ({ item, config }) => {
+        const title = item.pnx.addata.btitle ? item.pnx.addata.btitle[0] : '';
+        const author = item.pnx.addata.au ? item.pnx.addata.au[0] : '';
+        const ti = encodeURIComponent(`ti=${title}`);
+        const au = encodeURIComponent(`au=${author}`);
+        return {
+          href: `${config.values.baseUrls.ezborrow}?query=${ti}+and+${au}`,
+          label: 'Request E-ZBorrow',
+        };
+      },
+      ill: ({ item, config }) => ({
+        href: `${config.values.baseUrls.ill}?${item.delivery.GetIt2.link.match(/resolve?(.*)/)}`,
+        label: 'Request ILL',
+      }),
+      login: () => ({
+        label: 'Login to see request options',
+        action: ($injector) => $injector.get('customLoginService').login(),
+      }),
     },
-    ill: ({ item, config }) => `${config.values.baseUrls.ill}?${item.delivery.GetIt2.link.match(/resolve?(.*)/)}`
-  },
-  linkText: {
-    ezborrow: 'Request E-ZBorrow',
-    ill: 'Request ILL',
-  },
-  showLinks: {
-    ezborrow: ({ user, item, config }) => {
+}
+```
+
+### `config.showButtons`
+
+Keys refer to `buttonIds`. Values are pure functions which return a boolean.
+
+Functions take the following named parameters via a POJO:
+* `user`: `Object` representation of a PDS user. Currently only with keys `id` and `bor-status` from the PDS api. `undefined` if a user is not logged in. (TODO: refactor to own module for more options)
+* `item`: `$ctrl.item` object from the `<prm-location-items>` component.
+* `loggedIn`: `Boolean` representation of loggedIn state.
+* `config`: The configuration object itself for internal references.
+
+
+```js
+{
+  showButtons: {
+    ezborrow: ({ user = {}, item, config }) => {
       const isBook = ['BOOK', 'BOOKS'].some(type => item.pnx.addata.ristype.indexOf(type) > -1);
-      const borStatus = user && user['bor-status'];
-      return isBook && config.values.authorizedStatuses.ezborrow.indexOf(borStatus) > -1;
+      return isBook && config.values.authorizedStatuses.ezborrow.indexOf(user['bor-status']) > -1;
     },
-    ill: ({ user, item, config }) => {
-      const ezborrow = config.showLinks.ezborrow({ user, item, config });
-      return !ezborrow && config.valuaes.authorizedStatuses.ill.indexOf(borStatus) > -1
+    ill: ({ user = {}, item, config }) => {
+      const ezborrow = config.showButtons.ezborrow({ user, item, config });
+      return !ezborrow && config.values.authorizedStatuses.ill.indexOf(user['bor-status']) > -1;
     },
-  },
-  hideDefault: ({ items, config }) => {
+    login: ({ loggedIn }) => !loggedIn,
+  }
+}
+```
+
+### `config.noButtonsText` (optional)
+
+The text to show when no buttons are rendered. By default, renders `Request not available`
+
+*Note*: Has access to custom backoffice values via `{backoffice.key.value}` syntax:
+```js
+{
+  noButtonsText: '{item.request.blocked}',
+}
+```
+### `config.hideDefault` (optional)
+
+Determines whether to hide default buttons/text on a per-item basis. By default, hides none.
+
+A function which takes the following named parameters via a POJO:
+* `user`: `Object` representation of a PDS user. Currently only with keys `id` and `bor-status` from the PDS api. `undefined` if a user is not logged in. (TODO: refactor to own module for more options)
+* `items`: the array of items in `$ctrl.currLoc.items` from the `<prm-location-items>` component.
+* `loggedIn`: `Boolean` representation of loggedIn state.
+* `config`: The configuration object itself for internal references.
+
+Functions should be pure and returns an `Array` of `Boolean`s that correspond to each element in `items`. For example, to hide only the second default action of three items should return `[false, true, false]`.
+
+```js
+{
+  hideDefault: ({ items, config, loggedIn }) => {
+    if (!loggedIn) {
+      return items.map(() => true);
+    }
+
     const { checkAreItemsUnique, checkIsAvailable } = config.values.functions;
 
     const availabilityStatuses = items.map(checkIsAvailable);
@@ -101,37 +182,21 @@ See [configuration schema](#configuration-schema)
 
     return availabilityStatuses.map(isAvailable => allUnavailable || (itemsAreUnique && !isAvailable));
   },
-  hideCustom: ({ items, config }) => config.hideDefault({ items, config }).map(boolean => !boolean),
-  values: {
-    baseUrls: {
-      ezborrow: 'http://dev.login.library.nyu.edu/ezborrow/nyu',
-      ill: 'http://dev.ill.library.nyu.edu/illiad/illiad.dll/OpenURL',
-    },
-    authorizedStatuses: {
-      ezborrow: ["50", "51", "52", "53", "54", "55", "56", "57", "58", "60", "61", "62", "63", "65", "66", "80", "81", "82", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41"],
-      ill: ["30", "31", "32", "34", "35", "37", "50", "51", "52", "53", "54", "55", "56", "57", "58", "60", "61", "62", "63", "65", "66", "80", "81", "82"]
-    },
-    functions: {
-      checkAreItemsUnique: items => items.some((item, _i, items) => item._additionalData.itemdescription !== items[0]._additionalData.itemdescription),
-      checkIsAvailable: item => {
-        const unavailablePatterns = [
-          /Requested/g,
-          /^\d{2}\/\d{2}\/\d{2}/g, // starts with dd/dd/dd
-          'Requested',
-          'Billed as Lost',
-          'Claimed Returned',
-          'In Processing',
-          'In Transit',
-          'On Hold',
-          'Request ILL',
-          'On Order',
-        ];
-
-        const hasPattern = (patterns, target) => patterns.some(str => target.match(new RegExp(str)));
-        const [circulationStatus, ...otherStatusFields] = item.itemFields;
-        return !hasPattern(unavailablePatterns, circulationStatus);
-      }
-    }
-  },
 }
 ```
+
+### `config.hideCustom` (optional)
+
+Link `config.hideDefault`, except determines whether to hide the *custom* buttons/text on a per-item basis.
+
+By default, hides none.
+
+```js
+{
+  hideCustomRequest: ({ config, ...rest }) => config.hideDefault({ config, ...rest }).map(boolean => !boolean)
+}
+```
+
+### `config.values` (optional)
+
+A dictionary of arbitrary values to be referred to within your functions. This is useful for more complex logic that you may want to test against, or reuse in multiple functions.

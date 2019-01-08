@@ -18,7 +18,7 @@ export default function prmLocationItemsAfterController(config, $element, custom
   ctrl.revealCustomRequest = ctrl.cssCustomRequest({ display: 'flex' });
 
   ctrl.runAvailabilityCheck = () => {
-    const loggedIn = !ctrl.parentCtrl.userSessionManagerService.isGuest();
+    const loggedIn = ctrl.customLoginService.isLoggedIn;
     customRequestService.setState({ loggedIn });
 
     return (!loggedIn ? Promise.resolve(undefined) : customLoginService.fetchPDSUser())
@@ -45,14 +45,14 @@ export default function prmLocationItemsAfterController(config, $element, custom
     if (ctrl.parentCtrl.currLoc.items !== ctrl.trackedItems) {
       ctrl.trackedItems = ctrl.parentCtrl.currLoc.items;
       ctrl.runAvailabilityCheck().then(() => {
-        const { hideCustom, hideDefault } = config;
+        const { hideCustomRequest, hideDefaultRequest } = config;
 
-        const props = { items: ctrl.trackedItems, config, loggedIn: customRequestService.getState().loggedIn };
-        hideDefault(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
-        hideCustom(props).forEach((toHide, idx) => toHide ? ctrl.hideCustomRequest(idx) : null);
+        const props = { items: ctrl.trackedItems, config, loggedIn: customRequestService.getState().loggedIn, user: customRequestService.getState().user };
+        hideDefaultRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
+        hideCustomRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideCustomRequest(idx) : null);
         // double-action required because of wonkiness when moving among locations
-        hideDefault(props).forEach((toHide, idx) => !toHide ? ctrl.revealRequest(idx) : null);
-        hideCustom(props).forEach((toHide, idx) => !toHide ? ctrl.revealCustomRequest(idx) : null);
+        hideDefaultRequest(props).forEach((toHide, idx) => !toHide ? ctrl.revealRequest(idx) : null);
+        hideCustomRequest(props).forEach((toHide, idx) => !toHide ? ctrl.revealCustomRequest(idx) : null);
         ctrl.hasCheckedReveal = false;
       });
     }

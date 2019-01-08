@@ -20,6 +20,7 @@ angular
       user: undefined,
       login: undefined,
       logout: undefined,
+      isLoggedIn: undefined,
     };
 
     svc.fetchPDSUser = (store) => {
@@ -53,6 +54,10 @@ angular
         svc.store.logout = fxn;
         return fxn;
       },
+      setIsLoggedIn: isLoggedIn => {
+        svc.store.isLoggedIn = isLoggedIn;
+        return isLoggedIn;
+      },
 
       // Written as a function to encapsulate changable login/logout functions
       login: () => svc.store.login(),
@@ -62,11 +67,12 @@ angular
   }]);
 
 
-customLoginController.$inject = ['customLoginService']
+customLoginController.$inject = ['customLoginService'];
 function customLoginController(customLoginService) {
   const ctrl = this;
   ctrl.$onInit = function () {
     customLoginService.setLogin(ctrl.parentCtrl.handleLogin.bind(ctrl.parentCtrl));
     customLoginService.setLogout(ctrl.parentCtrl.handleLogout.bind(ctrl.parentCtrl));
+    customLoginService.setIsLoggedIn(ctrl.parentCtrl.isLoggedIn);
   };
 }

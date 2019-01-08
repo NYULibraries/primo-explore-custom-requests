@@ -6,11 +6,13 @@
   ],
   "plugins": [
     "@babel/plugin-proposal-object-rest-spread",
+    "transform-html-import-to-string",
   ],
   "env": {
-    "development": {
+    "test": {
       "plugins": [
-        "istanbul"
+        // not yet impletented:
+        // "istanbul"
       ]
     },
   }

@@ -11,12 +11,8 @@ export default function primoExploreCustomRequestsConfigService(config, $filter)
   svc.translate = original => original.replace(/\{(.+?)\}/g, (match, p1) => $filter('translate')(p1));
 
   const merge = angular.merge({
-      hideCustom: ({
-        items
-      }) => Array.apply(null, Array(items.length)),
-      hideDefault: ({
-        items
-      }) => Array.apply(null, Array(items.length)),
+      hideCustomRequest: ({ items }) => items.map(() => false),
+      hideDefaultRequest: ({ items }) => items.map(() => false),
     },
     config, {
       buttonIds: config.buttonIds.map(svc.translate),
