@@ -83,7 +83,7 @@ Functions should be pure and return an `Object` with the following schema:
 
 * `label`: The button text
 * `href`: Opens link in a new window when button is clicked.
-* `action`: Performs custom JS, with access to angular's [`$injector`] (https://docs.angularjs.org/api/auto/service/$injector) object.
+* `action`: Performs custom JS, with access to angular's [`$injector`](https://docs.angularjs.org/api/auto/service/$injector) object.
 
 ```js
 {
@@ -193,7 +193,7 @@ By default, hides none.
 
 ```js
 {
-  hideCustomRequest: ({ config, ...rest }) => config.hideDefault({ config, ...rest }).map(boolean => !boolean)
+  hideCustomRequest: props => props.config.hideDefault({ config: props.config }).map(boolean => !boolean)
 }
 ```
 
