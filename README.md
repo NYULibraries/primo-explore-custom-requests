@@ -155,7 +155,7 @@ The text to show when no buttons are rendered. By default, renders `Request not 
   noButtonsText: '{item.request.blocked}',
 }
 ```
-### `config.hideDefault` (optional)
+### `config.hideDefaultRequest` (optional)
 
 Determines whether to hide default buttons/text on a per-item basis. By default, hides none.
 
@@ -169,7 +169,7 @@ Functions should be pure and returns an `Array` of `Boolean`s that correspond to
 
 ```js
 {
-  hideDefault: ({ items, config, loggedIn }) => {
+  hideDefaultRequest: ({ items, config, loggedIn }) => {
     if (!loggedIn) {
       return items.map(() => true);
     }
@@ -185,15 +185,15 @@ Functions should be pure and returns an `Array` of `Boolean`s that correspond to
 }
 ```
 
-### `config.hideCustom` (optional)
+### `config.hideCustomRequest` (optional)
 
-Link `config.hideDefault`, except determines whether to hide the *custom* buttons/text on a per-item basis.
+Link `config.hideDefaultRequest`, except determines whether to hide the *custom* buttons/text on a per-item basis.
 
 By default, hides none.
 
 ```js
 {
-  hideCustomRequest: props => props.config.hideDefault({ config: props.config }).map(boolean => !boolean)
+  hideCustomRequest: props => props.config.hideDefaultRequest(props).map(boolean => !boolean)
 }
 ```
 

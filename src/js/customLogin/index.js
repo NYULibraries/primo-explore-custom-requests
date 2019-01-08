@@ -63,6 +63,7 @@ angular
       login: () => svc.store.login(),
       logout: () => svc.store.logout(),
       fetchPDSUser: () => svc.store.user ? Promise.resolve(svc.store.user) : svc.fetchPDSUser(svc.store),
+      isLoggedIn: () => svc.store.isLoggedIn,
     };
   }]);
 

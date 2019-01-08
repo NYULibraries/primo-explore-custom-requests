@@ -1,5 +1,5 @@
-prmLocationItemsAfterController.$inject = ['customRequestsConfigService', '$element', 'customLoginService', 'customRequestService'];
-export default function prmLocationItemsAfterController(config, $element, customLoginService, customRequestService) {
+prmLocationItemsAfterController.$inject = ['customRequestsConfigService', '$element', 'customLoginService', 'customRequestsStateService'];
+export default function prmLocationItemsAfterController(config, $element, customLoginService, stateService) {
   const ctrl = this;
 
   ctrl.cssCustomRequest = css => idx => {
@@ -18,8 +18,7 @@ export default function prmLocationItemsAfterController(config, $element, custom
   ctrl.revealCustomRequest = ctrl.cssCustomRequest({ display: 'flex' });
 
   ctrl.runAvailabilityCheck = () => {
-    const loggedIn = ctrl.customLoginService.isLoggedIn;
-    customRequestService.setState({ loggedIn });
+    const { loggedIn } = stateService.getState();
 
     return (!loggedIn ? Promise.resolve(undefined) : customLoginService.fetchPDSUser())
       .then(user => {
@@ -27,15 +26,15 @@ export default function prmLocationItemsAfterController(config, $element, custom
         const { buttonIds, showButtons, buttonGenerators } = config;
         const buttons = buttonIds.reduce((arr, id) => {
           const [showButton, buttonGenerator] = [showButtons, buttonGenerators].map(fxn => fxn[id]);
-          const show = showButton({ config, user, item, loggedIn  });
+          const show = showButton({ config, user, item, loggedIn });
           return arr.concat(show ? [ buttonGenerator({ item, config }) ] : []);
         }, []);
 
-        customRequestService.setState({ buttons, user });
+        stateService.setState({ buttons, user });
       })
       .catch(err => {
         console.error(err);
-        customRequestService.setState({ userFailure: true });
+        stateService.setState({ userFailure: true });
       });
   };
 
@@ -46,8 +45,9 @@ export default function prmLocationItemsAfterController(config, $element, custom
       ctrl.trackedItems = ctrl.parentCtrl.currLoc.items;
       ctrl.runAvailabilityCheck().then(() => {
         const { hideCustomRequest, hideDefaultRequest } = config;
+        const { loggedIn, user } = stateService.getState();
 
-        const props = { items: ctrl.trackedItems, config, loggedIn: customRequestService.getState().loggedIn, user: customRequestService.getState().user };
+        const props = { items: ctrl.trackedItems, config, loggedIn, user };
         hideDefaultRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
         hideCustomRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideCustomRequest(idx) : null);
         // double-action required because of wonkiness when moving among locations
@@ -60,5 +60,7 @@ export default function prmLocationItemsAfterController(config, $element, custom
 
   ctrl.$onInit = () => {
     ctrl.noButtonsText = config.noButtonsText;
+    const loggedIn = customLoginService.isLoggedIn();
+    stateService.setState({ loggedIn });
   };
 }

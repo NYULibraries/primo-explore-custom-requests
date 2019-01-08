@@ -1,5 +1,5 @@
-import customRequestsController from './controllers/customRequestsController'
-import customRequestsHandlerController from './controllers/customRequestHandlerController'
+import customRequestsController from './controllers/customRequestsController';
+import customRequestsHandlerController from './controllers/customRequestHandlerController';
 import customRequestsConfigService from './services/customRequestsConfigService';
 import customRequestsStateService from './services/customRequestsStateService';
 import './customLogin';
@@ -34,4 +34,4 @@ angular
       parentCtrl: '^prmLocationItems',
     },
   })
-  .service('customRequestStateService', customRequestsStateService);
+  .service('customRequestsStateService', customRequestsStateService);

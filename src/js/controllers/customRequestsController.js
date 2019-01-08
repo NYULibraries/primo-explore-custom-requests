@@ -1,5 +1,5 @@
-prmLocationItemAfterController.$inject = ['$window', '$scope', '$injector', 'customRequestService'];
-export default function prmLocationItemAfterController($window, $scope, $injector, customRequestService) {
+prmLocationItemAfterController.$inject = ['$window', '$scope', '$injector', 'customRequestsStateService'];
+export default function prmLocationItemAfterController($window, $scope, $injector, stateService) {
   const ctrl = this;
 
   ctrl.handleClick = (event, { action, href, label }) => {
@@ -11,15 +11,15 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
   ctrl.refreshAvailability = () => {
     $scope.$applyAsync(() => {
-      const { user, userFailure, buttons, loggedIn } = customRequestService.getState();
+      const { user, userFailure, buttons, loggedIn } = stateService.getState();
       Object.assign(ctrl, { user, userFailure, buttons, loggedIn });
     });
   };
 
   ctrl.$doCheck = () => {
-    if (ctrl.serviceState !== customRequestService.getState()) {
+    if (ctrl.serviceState !== stateService.getState()) {
       ctrl.refreshAvailability();
-      ctrl.serviceState = customRequestService.getState();
+      ctrl.serviceState = stateService.getState();
     }
   };
 }
