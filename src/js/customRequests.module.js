@@ -1,6 +1,10 @@
 import customRequestsController from './controllers/customRequestsController'
 import customRequestsHandlerController from './controllers/customRequestHandlerController'
+import customRequestsConfigService from './services/customRequestsConfigService';
+import customRequestsStateService from './services/customRequestsStateService';
 import './customLogin';
+
+import customRequestsTemplate from '../html/custom_requests_template.html';
 
 angular
   .module('primoExploreCustomRequests', [
@@ -16,64 +20,18 @@ angular
     //that would prevent CORS from working
     delete $httpProvider.defaults.headers.common['X-Requested-With'];
   }])
-  .service('customRequestsConfigService', ['primoExploreCustomRequestsConfig', '$filter', function (config, $filter) {
-    const svc = this;
-
-    if (!config) {
-      console.warn('the constant primoExploreCustomRequestsConfig is not defined');
-      return;
-    }
-
-    // original translate function
-    svc.translate = original => original.replace(/\{(.+?)\}/g, (match, p1) => $filter('translate')(p1));
-
-    const merge = angular.merge(
-      {
-        hideCustom: ({ items }) => Array.apply(null, Array(items.length)),
-        hideDefault: ({ items }) => Array.apply(null, Array(items.length)),
-      },
-      config,
-      {
-        buttonIds: config.buttonIds.map(svc.translate),
-        noButtonsText: config.noButtonsText ? svc.translate(config.noButtonsText) : 'Request not available',
-      }
-    );
-
-    return merge;
-  }])
+  .service('customRequestsConfigService', customRequestsConfigService)
   .component('primoExploreCustomRequests', {
     controller: customRequestsController,
     require: {
       parentCtrl: '^prmLocationItemAfter'
     },
-    template: `
-      <div layout="row" layout-align="center center">
-        <div layout="row" layout-align="center center" ng-repeat="button in $ctrl.buttons">
-          <button class="button-as-link md-button md-primoExplore-theme md-ink-ripple" type="button" ng-click="$ctrl.handleClick($event, button)"
-            aria-label="Type"><span>{{ button.label }}</span>
-          </button>
-          <div class="skewed-divider" ng-if="!$last"></div>
-        </div>
-        <span ng-if="$ctrl.loggedIn && !$ctrl.user && !$ctrl.userFailure">Retrieving request options...</span>
-        <span ng-if="$ctrl.userFailure">Unable to retrieve request options</span>
-        <span ng-if="$ctrl.user && $ctrl.buttons && $ctrl.buttons.length === 0">{{ $ctrl.noButtonsText }}</span>
-      </div>
-    `
+    template: customRequestsTemplate,
   })
   .component('primoExploreCustomRequestsHandler', {
     controller: customRequestsHandlerController,
     require: {
-      parentCtrl: '^prmLocationItems'
-    }
+      parentCtrl: '^prmLocationItems',
+    },
   })
-  .service('customRequestService', function () {
-    const svc = this;
-    svc.state = {}
-    return ({
-      setState: newState => {
-        svc.state = angular.merge({}, svc.state, newState);
-        return svc.state;
-      },
-      getState: () => svc.state,
-    });
-  });
+  .service('customRequestStateService', customRequestsStateService);

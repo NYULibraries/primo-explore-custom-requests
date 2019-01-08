@@ -3,14 +3,14 @@ export default function prmLocationItemsAfterController(config, $element, custom
   const ctrl = this;
 
   ctrl.cssCustomRequest = css => idx => {
-    const $el = $element.parent().parent().queryAll('prm-location-item-after')[idx]
+    const $el = $element.parent().parent().queryAll('prm-location-item-after')[idx];
     $el ? $el.css(css) : null;
-  }
+  };
 
   ctrl.cssRequest = css => idx => {
     const $el = $element.parent().parent().queryAll('.md-list-item-text')[idx];
     $el ? $el.children().eq(2).css(css) : null;
-  }
+  };
 
   ctrl.hideRequest = ctrl.cssRequest({ display: 'none' });
   ctrl.hideCustomRequest = ctrl.cssCustomRequest({ display: 'none' });
@@ -28,16 +28,16 @@ export default function prmLocationItemsAfterController(config, $element, custom
         const buttons = buttonIds.reduce((arr, id) => {
           const [showButton, buttonGenerator] = [showButtons, buttonGenerators].map(fxn => fxn[id]);
           const show = showButton({ config, user, item, loggedIn  });
-          return arr.concat(show ? [ buttonGenerator({ item, config }) ] : [])
+          return arr.concat(show ? [ buttonGenerator({ item, config }) ] : []);
         }, []);
 
         customRequestService.setState({ buttons, user });
       })
       .catch(err => {
         console.error(err);
-        customRequestService.setState({ userFailure: true })
+        customRequestService.setState({ userFailure: true });
       });
-  }
+  };
 
   ctrl.$doCheck = () => {
     if (ctrl.parentCtrl.currLoc === undefined) return;
@@ -47,12 +47,12 @@ export default function prmLocationItemsAfterController(config, $element, custom
       ctrl.runAvailabilityCheck().then(() => {
         const { hideCustom, hideDefault } = config;
 
-        const props = { items: ctrl.trackedItems, config, loggedIn: customRequestService.getState().loggedIn }
+        const props = { items: ctrl.trackedItems, config, loggedIn: customRequestService.getState().loggedIn };
         hideDefault(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
-        hideCustom(props).forEach((toHide, idx) => toHide ? ctrl.hideCustomRequest(idx) : null)
+        hideCustom(props).forEach((toHide, idx) => toHide ? ctrl.hideCustomRequest(idx) : null);
         // double-action required because of wonkiness when moving among locations
         hideDefault(props).forEach((toHide, idx) => !toHide ? ctrl.revealRequest(idx) : null);
-        hideCustom(props).forEach((toHide, idx) => !toHide ? ctrl.revealCustomRequest(idx) : null)
+        hideCustom(props).forEach((toHide, idx) => !toHide ? ctrl.revealCustomRequest(idx) : null);
         ctrl.hasCheckedReveal = false;
       });
     }

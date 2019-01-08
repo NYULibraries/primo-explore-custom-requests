@@ -1,12 +1,17 @@
 {
   "presets": [
-    "es2015"
+    ["@babel/preset-env", {
+      "targets": "last 2 versions, not dead"
+    }]
+  ],
+  "plugins": [
+    "@babel/plugin-proposal-object-rest-spread",
   ],
   "env": {
     "development": {
       "plugins": [
         "istanbul"
       ]
-    }
+    },
   }
 }

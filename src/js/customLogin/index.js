@@ -20,31 +20,29 @@ angular
       user: undefined,
       login: undefined,
       logout: undefined,
-    }
+    };
 
     svc.fetchPDSUser = (store) => {
       // source: https://stackoverflow.com/a/21125098/8603212
       const getCookie = function (name) {
         var match = $window.document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
         return match ? match[2] : undefined;
-      }
+      };
 
       store.user = $http.get(`${config.pdsUrl}?${config.pdsUserInfo.queryString}&pds_handle=${getCookie('PDS_HANDLE')}`, {
           timeout: 6000
         })
         .then(response => {
           const xml = response.data;
-          const getXMLProp = prop => (new $window.DOMParser).parseFromString(xml, 'text/xml').querySelector(prop).textContent
-          const user = config.pdsUserInfo.selectors.reduce((res, prop) => Object.assign(res, {
-            [prop]: getXMLProp(prop)
-          }), {});
+          const getXMLProp = prop => (new $window.DOMParser).parseFromString(xml, 'text/xml').querySelector(prop).textContent;
+          const user = config.pdsUserInfo.selectors.reduce((res, prop) => ({ ...res, [prop]: getXMLProp(prop) }), {});
 
           store.user = user;
           return user;
-        })
+        });
 
       return store.user;
-    }
+    };
 
     return {
       setLogin: fxn => {
@@ -61,7 +59,7 @@ angular
       logout: () => svc.store.logout(),
       fetchPDSUser: () => svc.store.user ? Promise.resolve(svc.store.user) : svc.fetchPDSUser(svc.store),
     };
-  }])
+  }]);
 
 
 customLoginController.$inject = ['customLoginService']
