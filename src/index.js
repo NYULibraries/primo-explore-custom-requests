@@ -1,2 +1,2 @@
-require('./js/customRequests.module.js');
-module.exports = 'customRequests';
+require('./js/primoExploreCustomRequests.module.js');
+module.exports = 'primoExploreCustomRequests';
