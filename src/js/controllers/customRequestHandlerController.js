@@ -1,16 +1,16 @@
-prmLocationItemsAfterController.$inject = ['customRequestsConfigService', '$element', 'customLoginService', 'customRequestService'];
-export default function prmLocationItemsAfterController(config, $element, customLoginService, customRequestService) {
+prmLocationItemsAfterController.$inject = ['customRequestsConfigService', '$element', 'customLoginService', 'customRequestsStateService'];
+export default function prmLocationItemsAfterController(config, $element, customLoginService, stateService) {
   const ctrl = this;
 
   ctrl.cssCustomRequest = css => idx => {
-    const $el = $element.parent().parent().queryAll('prm-location-item-after')[idx]
+    const $el = $element.parent().parent().queryAll('prm-location-item-after')[idx];
     $el ? $el.css(css) : null;
-  }
+  };
 
   ctrl.cssRequest = css => idx => {
     const $el = $element.parent().parent().queryAll('.md-list-item-text')[idx];
     $el ? $el.children().eq(2).css(css) : null;
-  }
+  };
 
   ctrl.hideRequest = ctrl.cssRequest({ display: 'none' });
   ctrl.hideCustomRequest = ctrl.cssCustomRequest({ display: 'none' });
@@ -18,33 +18,25 @@ export default function prmLocationItemsAfterController(config, $element, custom
   ctrl.revealCustomRequest = ctrl.cssCustomRequest({ display: 'flex' });
 
   ctrl.runAvailabilityCheck = () => {
-    const loggedIn = !ctrl.parentCtrl.userSessionManagerService.isGuest();
-    customRequestService.setState({ loggedIn });
+    const { loggedIn } = stateService.getState();
 
-    if (!loggedIn) {
-      return Promise.resolve(undefined);
-    }
-
-    return customLoginService.fetchPDSUser()
+    return (!loggedIn ? Promise.resolve(undefined) : customLoginService.fetchPDSUser())
       .then(user => {
         const item = ctrl.parentCtrl.item;
-        const links = config.links.reduce((arr, link) => {
-          const show = config.showLinks[link]({ config, user, item  });
-          const makeLink = () => ({
-            label: config.linkText[link],
-            href: config.linkGenerators[link]({ item, config })
-          });
-
-          return arr.concat(show ? [ makeLink() ] : [])
+        const { buttonIds, showButtons, buttonGenerators } = config;
+        const buttons = buttonIds.reduce((arr, id) => {
+          const [showButton, buttonGenerator] = [showButtons, buttonGenerators].map(fxn => fxn[id]);
+          const show = showButton({ config, user, item, loggedIn });
+          return arr.concat(show ? [ buttonGenerator({ item, config }) ] : []);
         }, []);
 
-        customRequestService.setState({ links, user });
+        stateService.setState({ buttons, user });
       })
       .catch(err => {
         console.error(err);
-        customRequestService.setState({ userFailure: true })
+        stateService.setState({ userFailure: true });
       });
-  }
+  };
 
   ctrl.$doCheck = () => {
     if (ctrl.parentCtrl.currLoc === undefined) return;
@@ -52,19 +44,23 @@ export default function prmLocationItemsAfterController(config, $element, custom
     if (ctrl.parentCtrl.currLoc.items !== ctrl.trackedItems) {
       ctrl.trackedItems = ctrl.parentCtrl.currLoc.items;
       ctrl.runAvailabilityCheck().then(() => {
-        const defaultFunction = ({ items }) => Array.apply(null, Array(items.length));
-        const { hideCustom = defaultFunction, hideDefault = defaultFunction } = config;
-        hideDefault({ items: ctrl.trackedItems, config }).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
-        hideCustom({ items: ctrl.trackedItems, config }).forEach((toHide, idx) => toHide ? ctrl.hideCustomRequest(idx) : null)
+        const { hideCustomRequest, hideDefaultRequest } = config;
+        const { loggedIn, user } = stateService.getState();
+
+        const props = { items: ctrl.trackedItems, config, loggedIn, user };
+        hideDefaultRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
+        hideCustomRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideCustomRequest(idx) : null);
         // double-action required because of wonkiness when moving among locations
-        hideDefault({ items: ctrl.trackedItems, config }).forEach((toHide, idx) => !toHide ? ctrl.revealRequest(idx) : null);
-        hideCustom({ items: ctrl.trackedItems, config }).forEach((toHide, idx) => !toHide ? ctrl.revealCustomRequest(idx) : null)
+        hideDefaultRequest(props).forEach((toHide, idx) => !toHide ? ctrl.revealRequest(idx) : null);
+        hideCustomRequest(props).forEach((toHide, idx) => !toHide ? ctrl.revealCustomRequest(idx) : null);
         ctrl.hasCheckedReveal = false;
       });
     }
   };
 
   ctrl.$onInit = () => {
-    ctrl.noLinksText = config.noLinksText;
+    ctrl.noButtonsText = config.noButtonsText;
+    const loggedIn = customLoginService.isLoggedIn();
+    stateService.setState({ loggedIn });
   };
 }
