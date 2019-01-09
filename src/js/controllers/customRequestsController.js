@@ -23,7 +23,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
   ctrl.hideCustomRequest = ctrl.cssCustomRequest({ display: 'none' });
 
   ctrl.setButtonsInState = () => {
-    const { loggedIn } = stateService.getState();
+    const loggedIn = customLoginService.isLoggedIn();
 
     return (!loggedIn ? Promise.resolve(undefined) : customLoginService.fetchPDSUser())
       .then(user => {
@@ -35,15 +35,15 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
           return arr.concat(show ? [ buttonGenerator({ item, config }) ] : []);
         }, []);
 
-        stateService.setState({ buttons, user });
+        stateService.setState({ buttons, user, loggedIn });
       })
       .catch(err => {
         console.error(err);
-        stateService.setState({ userFailure: true, buttons: undefined, user: null, });
+        stateService.setState({ userFailure: true, buttons: undefined, user: null, loggedIn });
       });
   };
 
-  ctrl.applyRequests = () => {
+  ctrl.refreshControllerValues = () => {
     $scope.$applyAsync(() => {
       const { user, userFailure, buttons, loggedIn } = stateService.getState();
       Object.assign(ctrl, { user, userFailure, buttons, loggedIn });
@@ -51,11 +51,6 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
   };
 
   ctrl.$onInit = () => {
-    // update login if not yet done
-    if (stateService.getState().loggedIn === undefined) {
-      stateService.setState({ loggedIn: customLoginService.isLoggedIn() });
-    }
-
     const stateItems = stateService.getState().items;
     if (stateItems !== ctrl.parentCtrl.currLoc.items) {
       stateService.setState({ items: ctrl.parentCtrl.currLoc.items });
@@ -66,11 +61,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
         const props = { config, items, user };
         hideDefaultRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
         hideCustomRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideCustomRequest(idx) : null);
-
-        ctrl.applyRequests();
       });
-    } else {
-      ctrl.applyRequests();
     }
   };
 
@@ -78,7 +69,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     const serviceState = stateService.getState();
     if (ctrl.state !== serviceState) {
       ctrl.state = stateService.getState();
-      ctrl.applyRequests();
+      ctrl.refreshControllerValues();
     }
   };
 }
