@@ -137,7 +137,7 @@ Functions take the following named parameters via a POJO:
       const ezborrow = config.showButtons.ezborrow({ user, item, config });
       return !ezborrow && config.values.authorizedStatuses.ill.indexOf(user['bor-status']) > -1;
     },
-    login: ({ loggedIn }) => !loggedIn,
+    login: ({ user }) => user !== undefined,
   }
 }
 ```
@@ -159,7 +159,6 @@ Determines whether to hide default buttons/text on a per-item basis. By default,
 A function which takes the following named parameters via a POJO:
 * `user`: `Object` representation of a PDS user. `undefined` if a user is not logged in. `null` if a user is logged in, but the PDS API fetch failed.
 * `items`: the array of items in `$ctrl.currLoc.items` from the `<prm-location-items>` component.
-* `loggedIn`: `Boolean` representation of loggedIn state.
 * `config`: The configuration object itself for internal references.
 
 Functions should be pure and returns an `Array` of `Boolean`s that correspond to each element in `items`. For example, to hide only the second default action of three items should return `[false, true, false]`.
