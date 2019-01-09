@@ -58,7 +58,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
   };
 
   ctrl.$onInit = () => {
-    ctrl.customLoginService = $injector.has('customLoginService') && $injector.get('customLoginService');
+    ctrl.customLoginService = $injector.has('primoExploreCustomLoginService') && $injector.get('primoExploreCustomLoginService');
 
     const stateItems = stateService.getState().items;
     if (stateItems !== ctrl.parentCtrl.currLoc.items) {
