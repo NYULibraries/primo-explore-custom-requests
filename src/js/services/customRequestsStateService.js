@@ -3,7 +3,7 @@ export default function () {
   svc.state = {};
   return ({
     setState: newState => {
-      svc.state = angular.merge({}, svc.state, newState);
+      svc.state = Object.assign({}, svc.state, newState);
       return svc.state;
     },
     getState: () => svc.state,
