@@ -31,7 +31,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
         const { buttonIds, showButtons, buttonGenerators } = config;
         const buttons = buttonIds.reduce((arr, id) => {
           const [showButton, buttonGenerator] = [showButtons, buttonGenerators].map(fxn => fxn[id]);
-          const show = showButton({ config, user, item, loggedIn });
+          const show = showButton({ config, user, item });
           return arr.concat(show ? [ buttonGenerator({ item, config }) ] : []);
         }, []);
 
@@ -39,7 +39,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
       })
       .catch(err => {
         console.error(err);
-        stateService.setState({ userFailure: true, buttons: undefined, user: undefined, });
+        stateService.setState({ userFailure: true, buttons: undefined, user: null, });
       });
   };
 
@@ -62,14 +62,22 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
       ctrl.setButtonsInState().then(() => {
         const { hideCustomRequest, hideDefaultRequest } = config;
-        const { items, user, loggedIn } = stateService.getState();
-        const props = { config, items, user, loggedIn };
+        const { items, user } = stateService.getState();
+        const props = { config, items, user };
         hideDefaultRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
         hideCustomRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideCustomRequest(idx) : null);
 
         ctrl.applyRequests();
       });
     } else {
+      ctrl.applyRequests();
+    }
+  };
+
+  ctrl.$doCheck = () => {
+    const serviceState = stateService.getState();
+    if (ctrl.state !== serviceState) {
+      ctrl.state = stateService.getState();
       ctrl.applyRequests();
     }
   };

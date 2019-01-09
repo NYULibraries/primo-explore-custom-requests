@@ -119,20 +119,21 @@ For example:
 Keys refer to `buttonIds`. Values are pure functions which return a boolean.
 
 Functions take the following named parameters via a POJO:
-* `user`: `Object` representation of a PDS user. Currently only with keys `id` and `bor-status` from the PDS api. `undefined` if a user is not logged in. (TODO: refactor to own module for more options)
+* `user`: `Object` representation of a PDS user. `undefined` if a user is not logged in. `null` if a user is logged in, but the PDS API fetch failed.
 * `item`: `$ctrl.item` object from the `<prm-location-items>` component.
-* `loggedIn`: `Boolean` representation of loggedIn state.
 * `config`: The configuration object itself for internal references.
 
 
 ```js
 {
   showButtons: {
-    ezborrow: ({ user = {}, item, config }) => {
+    ezborrow: ({ user, item, config }) => {
+      if (!user) return false;
       const isBook = ['BOOK', 'BOOKS'].some(type => item.pnx.addata.ristype.indexOf(type) > -1);
       return isBook && config.values.authorizedStatuses.ezborrow.indexOf(user['bor-status']) > -1;
     },
-    ill: ({ user = {}, item, config }) => {
+    ill: ({ user, item, config }) => {
+      if (!user) return false;
       const ezborrow = config.showButtons.ezborrow({ user, item, config });
       return !ezborrow && config.values.authorizedStatuses.ill.indexOf(user['bor-status']) > -1;
     },
@@ -156,7 +157,7 @@ The text to show when no buttons are rendered. By default, renders `Request not 
 Determines whether to hide default buttons/text on a per-item basis. By default, hides none.
 
 A function which takes the following named parameters via a POJO:
-* `user`: `Object` representation of a PDS user. Currently only with keys `id` and `bor-status` from the PDS api. `undefined` if a user is not logged in. (TODO: refactor to own module for more options)
+* `user`: `Object` representation of a PDS user. `undefined` if a user is not logged in. `null` if a user is logged in, but the PDS API fetch failed.
 * `items`: the array of items in `$ctrl.currLoc.items` from the `<prm-location-items>` component.
 * `loggedIn`: `Boolean` representation of loggedIn state.
 * `config`: The configuration object itself for internal references.
@@ -165,8 +166,8 @@ Functions should be pure and returns an `Array` of `Boolean`s that correspond to
 
 ```js
 {
-  hideDefaultRequest: ({ items, config, loggedIn }) => {
-    if (!loggedIn) {
+  hideDefaultRequest: ({ items, config, user }) => {
+    if (user === undefined) {
       return items.map(() => true);
     }
 
