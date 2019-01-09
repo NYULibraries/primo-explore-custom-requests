@@ -5,7 +5,7 @@
     </button>
     <div class="skewed-divider" ng-if="!$last"></div>
   </div>
-  <span ng-if="$ctrl.loggedIn && !$ctrl.user && !$ctrl.userFailure">Retrieving request options...</span>
-  <span ng-if="$ctrl.userFailure">Unable to retrieve request options</span>
-  <span ng-if="$ctrl.user && $ctrl.buttons && $ctrl.buttons.length === 0">{{ $ctrl.noButtonsText }}</span>
+  <span ng-if="$ctrl.userService && $ctrl.loggedIn && !$ctrl.user && !$ctrl.userFailure">Retrieving request options...</span>
+  <span ng-if="$ctrl.userService && $ctrl.userFailure">Unable to retrieve request options</span>
+  <span ng-if="$ctrl.buttons && $ctrl.buttons.length === 0">{{ $ctrl.noButtonsText }}</span>
 </div>

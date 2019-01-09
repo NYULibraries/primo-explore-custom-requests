@@ -31,9 +31,5 @@
     "babel-plugin-transform-html-import-to-string": "^0.0.1",
     "eslint": "^5.12.0",
     "rimraf": "^2.6.3"
-  },
-  "dependencies": {
-    "primo-explore-custom-login": "https://github.com/NYULibraries/primo-explore-custom-login"
-  },
-  "peerDependencies": {}
+  }
 }

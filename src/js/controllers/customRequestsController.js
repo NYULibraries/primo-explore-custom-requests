@@ -1,5 +1,5 @@
-prmLocationItemAfterController.$inject = ['$window', '$scope', '$injector', 'customRequestsStateService', 'customLoginService', 'customRequestsConfigService'];
-export default function prmLocationItemAfterController($window, $scope, $injector, stateService, customLoginService, config) {
+prmLocationItemAfterController.$inject = ['$window', '$scope', '$injector', 'customRequestsStateService', 'customRequestsConfigService'];
+export default function prmLocationItemAfterController($window, $scope, $injector, stateService, config) {
   const ctrl = this;
 
   ctrl.handleClick = (event, { action, href, label }) => {
@@ -23,9 +23,16 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
   ctrl.hideCustomRequest = ctrl.cssCustomRequest({ display: 'none' });
 
   ctrl.setButtonsInState = () => {
-    const loggedIn = customLoginService.isLoggedIn();
+    const loggedIn = ctrl.customLoginService ? ctrl.customLoginService.isLoggedIn() : undefined;
 
-    return (!loggedIn ? Promise.resolve(undefined) : customLoginService.fetchPDSUser())
+    let promise;
+    if (loggedIn) {
+      promise = ctrl.customLoginService.fetchPDSUser();
+    } else {
+      promise = Promise.resolve(undefined);
+    }
+
+    return promise
       .then(user => {
         const item = ctrl.parentCtrl.item;
         const { buttonIds, showButtons, buttonGenerators } = config;
@@ -51,6 +58,8 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
   };
 
   ctrl.$onInit = () => {
+    ctrl.customLoginService = $injector.has('customLoginService') && $injector.get('customLoginService');
+
     const stateItems = stateService.getState().items;
     if (stateItems !== ctrl.parentCtrl.currLoc.items) {
       stateService.setState({ items: ctrl.parentCtrl.currLoc.items });

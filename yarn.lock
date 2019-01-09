@@ -2015,10 +2015,6 @@ prelude-ls@~1.1.2:
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.1.2.tgz#21932a549f5e52ffd9a827f570e04be62a97da54"
   integrity sha1-IZMqVJ9eUv/ZqCf1cOBL5iqX2lQ=
 
-"primo-explore-custom-login@https://github.com/NYULibraries/primo-explore-custom-login":
-  version "0.0.1"
-  resolved "https://github.com/NYULibraries/primo-explore-custom-login#66f5e1203604a35afbbd4f1f8b31dd5b35fb5944"
-
 private@^0.1.6:
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/private/-/private-0.1.8.tgz#2381edb3689f7a53d653190060fcf822d2f368ff"
