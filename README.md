@@ -16,14 +16,10 @@ let app = angular.module('viewCustom', [
 3. Add components to appropriate `prmAfter` components:
 ```js
 app
-  // 1. Inject in <prm-authentication-after> order to capture the login handler function, as well as using custom login functions for reading logged-in user data via PDS (TODO: will be factored out as own customization)
-  .component('prmAuthenticationAfter', {
-    template: `<primo-explore-custom-login></primo-explore-custom-login>`
-  })
-  // 2. Inject in the <prm-location-item-after> component of the DOM, which exists after each holding entry WITHIN a specific location.
+  // 1. Inject in the <prm-location-item-after> component of the DOM, which exists after each holding entry WITHIN a specific location.
   .component('prmLocationItemAfter', {
     template: `<primo-explore-custom-requests></primo-explore-custom-requests>`,
-      // 2a. Use this trick to implement the customization as a SIBLING of the item details, as opposed to its CHILD. This is a not a requirement, but is strongly recommended;Otherwise, styling of injected components will not match the styling of the elements it intends to replace. Implementation is left to the user so that this customization does not completely 'hijack' the institution's usage of this component.
+      // 1a. Use this trick to implement the customization as a SIBLING of the item details, as opposed to its CHILD. This is a not a requirement, but is strongly recommended;Otherwise, styling of injected components will not match the styling of the elements it intends to replace. Implementation is left to the user so that this customization does not completely 'hijack' the institution's usage of this component.
     controller: ['$element', function($element) {
       const ctrl = this;
       ctrl.$postLink = () => {
@@ -34,11 +30,9 @@ app
       };
     }]
   })
-  // 3. Inject into the <prm-location-items-after> template. This aspect of the customization has no visible effects, but does communicate with <primo-explore-custom-requests> and is vital for tracking changes to what item(s) are currently displayed on the screen.
-  .component('prmLocationItemsAfter', {
-    template: `
-    <primo-explore-custom-requests-handler></primo-explore-custom-requests-handler>
-    `
+  // 2. Inject the <primo-explore-custom-login> peer dependency in order to capture currently logged in user via PDS
+  .component('prmAuthenticationAfter', {
+    template: `<primo-explore-custom-login></primo-explore-custom-login>`
   })
 ```
 4. Configure
@@ -49,6 +43,8 @@ app
   })
 ```
 See [configuration schema](#configuration-schema)
+
+Be sure to also configure the `<primo-explore-custom-login>`.
 
 ## Configuration Schema
 |name|type|usage|

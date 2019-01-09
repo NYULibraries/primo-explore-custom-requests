@@ -1,7 +1,6 @@
 import 'primo-explore-custom-login';
 
 import customRequestsController from './controllers/customRequestsController';
-import customRequestsHandlerController from './controllers/customRequestHandlerController';
 import customRequestsConfigService from './services/customRequestsConfigService';
 import customRequestsStateService from './services/customRequestsStateService';
 
@@ -25,14 +24,8 @@ angular
   .component('primoExploreCustomRequests', {
     controller: customRequestsController,
     require: {
-      parentCtrl: '^prmLocationItemAfter'
+      parentCtrl: '^prmLocationItems'
     },
     template: customRequestsTemplate,
-  })
-  .component('primoExploreCustomRequestsHandler', {
-    controller: customRequestsHandlerController,
-    require: {
-      parentCtrl: '^prmLocationItems',
-    },
   })
   .service('customRequestsStateService', customRequestsStateService);
