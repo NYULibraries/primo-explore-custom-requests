@@ -19,7 +19,7 @@ app
   // 1. Inject in the <prm-location-item-after> component of the DOM, which exists after each holding entry WITHIN a specific location.
   .component('prmLocationItemAfter', {
     template: `<primo-explore-custom-requests></primo-explore-custom-requests>`,
-      // 1a. Use this trick to implement the customization as a SIBLING of the item details, as opposed to its CHILD. This is a not a requirement, but is strongly recommended;Otherwise, styling of injected components will not match the styling of the elements it intends to replace. Implementation is left to the user so that this customization does not completely 'hijack' the institution's usage of this component.
+      // 1a. Use this trick to implement the customization as a SIBLING of the item details, as opposed to its CHILD. This is a not a requirement, but is strongly recommended. Otherwise, styling of injected components will not match the styling of the elements it intends to replace.
     controller: ['$element', function($element) {
       const ctrl = this;
       ctrl.$postLink = () => {
@@ -30,7 +30,7 @@ app
       };
     }]
   })
-  // 2. Inject the <primo-explore-custom-login> peer dependency in order to capture currently logged in user via PDS
+  // 2. Optional: Inject the <primo-explore-custom-login> peer dependency in order to capture currently logged in user via PDS
   .component('prmAuthenticationAfter', {
     template: `<primo-explore-custom-login></primo-explore-custom-login>`
   })
@@ -44,7 +44,7 @@ app
 ```
 See [configuration schema](#configuration-schema)
 
-Be sure to also configure the `<primo-explore-custom-login>`.
+If using `<primo-explore-custom-login>`, be sure to configure this as well according to that module's documentation.
 
 ## Configuration Schema
 |name|type|usage|
@@ -119,7 +119,7 @@ For example:
 Keys refer to `buttonIds`. Values are pure functions which return a boolean.
 
 Functions take the following named parameters via a POJO:
-* `user`: `Object` representation of a PDS user. `undefined` if a user is not logged in. `null` if a user is logged in, but the PDS API fetch failed.
+* `user`: `Object` representation of a PDS user as taken from the `primoExploreCustomLoginService`. `undefined` if when user is not logged in, or the optional peer dependency has not been installed. `null` if a user is logged in, but the PDS API fetch failed.
 * `item`: `$ctrl.item` object from the `<prm-location-items>` component.
 * `config`: The configuration object itself for internal references.
 
@@ -157,7 +157,7 @@ The text to show when no buttons are rendered. By default, renders `Request not 
 Determines whether to hide default buttons/text on a per-item basis. By default, hides none.
 
 A function which takes the following named parameters via a POJO:
-* `user`: `Object` representation of a PDS user. `undefined` if a user is not logged in. `null` if a user is logged in, but the PDS API fetch failed.
+* `user`: `Object` representation of a PDS user as taken from the `primoExploreCustomLoginService`. `undefined` if when user is not logged in, or the optional peer dependency has not been installed. `null` if a user is logged in, but the PDS API fetch failed.
 * `items`: the array of items in `$ctrl.currLoc.items` from the `<prm-location-items>` component.
 * `config`: The configuration object itself for internal references.
 
