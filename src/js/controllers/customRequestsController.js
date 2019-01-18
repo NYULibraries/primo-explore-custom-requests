@@ -23,7 +23,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
   ctrl.hideCustomRequest = ctrl.cssCustomRequest({ display: 'none' });
 
   ctrl.setButtonsInState = () => {
-    const loggedIn = ctrl.customLoginService ? ctrl.customLoginService.isLoggedIn() : undefined;
+    const loggedIn = ctrl.customLoginService ? ctrl.customLoginService.isLoggedIn : undefined;
 
     let promise;
     if (loggedIn) {
