@@ -59,15 +59,16 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
   ctrl.$onInit = () => {
     ctrl.customLoginService = $injector.has('primoExploreCustomLoginService') && $injector.get('primoExploreCustomLoginService');
+    const { currLoc, item } = ctrl.parentCtrl;
 
     const stateItems = stateService.getState().items;
-    if (stateItems !== ctrl.parentCtrl.currLoc.items) {
-      stateService.setState({ items: ctrl.parentCtrl.currLoc.items });
+    if (stateItems !== currLoc.items) {
+      stateService.setState({ items: currLoc.items });
 
       ctrl.setButtonsInState().then(() => {
         const { hideCustomRequest, hideDefaultRequest } = config;
         const { items, user } = stateService.getState();
-        const props = { config, items, user };
+        const props = { config, items, user, item };
         hideDefaultRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
         hideCustomRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideCustomRequest(idx) : null);
       });
