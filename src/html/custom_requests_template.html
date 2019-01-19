@@ -1,6 +1,7 @@
 <div layout="row" layout-align="center center">
   <div layout="row" layout-align="center center" ng-repeat="button in $ctrl.buttons">
-    <button class="button-as-link md-button md-primoExplore-theme md-ink-ripple" type="button" ng-click="$ctrl.handleClick($event, button)"
+    <button class="button-as-link md-button md-primoExplore-theme md-ink-ripple custom-request-{{ button.id }}"
+      type="button" ng-click="$ctrl.handleClick($event, button)"
       aria-label="Type"><span>{{ button.label }}</span>
     </button>
     <div class="skewed-divider" ng-if="!$last"></div>

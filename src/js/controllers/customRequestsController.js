@@ -9,26 +9,23 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     !(href || action) && console.warn(`Link ${label} has not been assigned either an 'action' or 'href' property`);
   };
 
-  ctrl.cssCustomRequest = css => idx => {
-    const $el = angular.element($window.document).queryAll('prm-location-item-after')[idx];
-    $el ? $el.css(css) : null;
-  };
-
-  ctrl.cssRequest = css => idx => {
+  ctrl.hideRequest = idx => {
     const $el = angular.element($window.document).queryAll('prm-location-items .md-list-item-text')[idx];
-    $el ? $el.children().eq(2).css(css) : null;
+    $el ? $el.children().eq(2).css({ display: 'none' }) : null;
   };
 
-  ctrl.hideRequest = ctrl.cssRequest({ display: 'none' });
-  ctrl.hideCustomRequest = ctrl.cssCustomRequest({ display: 'none' });
+  ctrl.hideCustomRequest = (id, idx) => {
+    const $el = angular.element($window.document).queryAll(`.custom-request-${id}`)[idx];
+    $el && $el.parent().css({ display: 'none' });
+  };
 
   ctrl.setButtonsInState = () => {
-    const loggedIn = ctrl.customLoginService ? ctrl.customLoginService.isLoggedIn : undefined;
-
-    let promise;
-    if (loggedIn) {
-      promise = ctrl.customLoginService.fetchPDSUser();
+    let loggedIn, promise;
+    if (ctrl.customLoginService) {
+      loggedIn = ctrl.customLoginService.isLoggedIn;
+      promise = loggedIn ? ctrl.customLoginService.fetchPDSUser() : Promise.resolve(undefined);
     } else {
+      loggedIn = false;
       promise = Promise.resolve(undefined);
     }
 
@@ -39,7 +36,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
         const buttons = buttonIds.reduce((arr, id) => {
           const [showButton, buttonGenerator] = [showButtons, buttonGenerators].map(fxn => fxn[id]);
           const show = showButton({ config, user, item });
-          return arr.concat(show ? [ buttonGenerator({ item, config }) ] : []);
+          return arr.concat(show ? [{ id, ...buttonGenerator({ item, config }) } ] : []);
         }, []);
 
         stateService.setState({ buttons, user, loggedIn });
@@ -52,8 +49,16 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
   ctrl.refreshControllerValues = () => {
     $scope.$applyAsync(() => {
-      const { user, userFailure, buttons, loggedIn } = stateService.getState();
+      const { user, userFailure, buttons, loggedIn, item, items } = stateService.getState();
       Object.assign(ctrl, { user, userFailure, buttons, loggedIn });
+
+      const hideCustomRequestsMap = config.hideCustomRequests({ item, items, user, config });
+      Object.keys(hideCustomRequestsMap).forEach(buttonKey => {
+        const hideArray = hideCustomRequestsMap[buttonKey];
+        hideArray.forEach((bool, idx) => {
+          bool ? ctrl.hideCustomRequest(buttonKey, idx) : null;
+        });
+      });
     });
   };
 
@@ -63,14 +68,12 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
     const stateItems = stateService.getState().items;
     if (stateItems !== currLoc.items) {
-      stateService.setState({ items: currLoc.items });
+      stateService.setState({ items: currLoc.items, item });
 
       ctrl.setButtonsInState().then(() => {
-        const { hideCustomRequest, hideDefaultRequest } = config;
         const { items, user } = stateService.getState();
         const props = { config, items, user, item };
-        hideDefaultRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
-        hideCustomRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideCustomRequest(idx) : null);
+        config.hideAllDefaultRequests(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
       });
     }
   };
