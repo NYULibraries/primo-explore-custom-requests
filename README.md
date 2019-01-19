@@ -51,9 +51,9 @@ If using `<primo-explore-custom-login>`, be sure to configure this as well accor
 |---|---|---|
 `buttonIds`| `Array`| List of keys that for conditionally rendered `buttons`.
 `buttonGenerators` |`Object`| Key-value reference of functions used generate button properties for custom `buttons`.
-|`noButtonsText`|`String` (optional) |Message to show if no buttons were generated from `buttonGenerators`. Default: `Request not available`.
-`hideDefaultRequests`| `Function` (optional) | Used to determine whether to hide all the default, out-of-the-box request buttons for specific items within a location. Default: hide none.
-`showCustomRequests`| `Function` (optional) | Used to determine whether to hide all the custom request buttons for specific items within a location. Default: hide none.
+|`noButtonsText`|`String` (optional) | Message to show if no buttons were generated from `buttonGenerators`. Default: `Request not available`.
+`hideDefaultRequests`| `Function` (optional) | Used to determine whether to hide any default, out-of-the-box request buttons for specific holdings within a location. Functions return an array of booleans. Default: hide none.
+`showCustomRequests`| `Object` (optional) | Used to determine whether to show a specific custom request button for specific holdings within a location. Functions return an array of booleans. Default: shows all.
 | `values` | `Object` (optional) | Dictionary used for arbitrary data and utility functions that may be used in other aspects of your configuration.
 
 ### `config.buttonIds`
@@ -91,25 +91,15 @@ For example:
 ```js
 {
   buttonGenerators: {
-      ezborrow: ({ item, config }) => {
-        const title = item.pnx.addata.btitle ? item.pnx.addata.btitle[0] : '';
-        const author = item.pnx.addata.au ? item.pnx.addata.au[0] : '';
-        const ti = encodeURIComponent(`ti=${title}`);
-        const au = encodeURIComponent(`au=${author}`);
-        return {
-          href: `${config.values.baseUrls.ezborrow}?query=${ti}+and+${au}`,
-          label: 'Request E-ZBorrow',
-        };
-      },
-      ill: ({ item, config }) => ({
-        href: `${config.values.baseUrls.ill}?${item.delivery.GetIt2.link.match(/resolve?(.*)/)}`,
-        label: 'Request ILL',
-      }),
-      login: () => ({
-        label: 'Login to see request options',
-        action: ($injector) => $injector.get('customLoginService').login(),
-      }),
-    },
+    ill: ({ item, config }) => ({
+      href: `${config.values.baseUrls.ill}?${item.delivery.GetIt2.link.match(/resolve?(.*)/)}`,
+      label: 'Request ILL',
+    }),
+    login: () => ({
+      label: 'Login to see request options',
+      action: ($injector) => $injector.get('customLoginService').login(),
+    }),
+  },
 }
 ```
 
@@ -157,36 +147,29 @@ Functions should be pure and returns an `Array` of `Boolean`s that correspond to
 
 Determines whether to show the *custom* buttons/text on a per-holding basis. By default, shows all.
 
-A function which takes the following named parameters via a POJO:
+Keys refer to `buttonIds`.
+
+Each function takes the following named parameters via a POJO:
 * `user`: `Object` representation of a PDS user as taken from the `primoExploreCustomLoginService`. `undefined` if when user is not logged in, or the optional peer dependency has not been installed. `null` if a user is logged in, but the PDS API fetch failed.
 * `items`: An array of holdings data. `$ctrl.currLoc.items` from the `<prm-location-items>` component.
 * `item`: Record data. `$ctrl.item` object from the `<prm-location-items>` component.
 * `config`: The configuration object itself for internal references.
 
-Functions should be pure and returns an object with `buttonIds` as properites.
-
-The values of this resulting object are an `Array` of `Boolean`s that correspond to each element in `items`. For example, to show a custom request action for only the second holding `[false, true, false]`.
+Functions should be pure and returns an `Array` of `Boolean`s that correspond to each element in `items`. For example, to show the custom request actions for only the second of three holdings, return `[false, true, false]`.
 
 ```js
-{
-  showCustomRequests: ({ item, items, config, user}) => {
-    const { showIll, showEzborrow, showLogin, showAfc } = config.values.functions;
-
-    const showArgs = { user, item, config };
-    const ill = showIll(showArgs);
-    const ezborrow = showEzborrow(showArgs);
-    const login = showLogin(showArgs);
-    const afc = showAfc(showArgs);
-    const hideDefaultRequests = config.hideDefaultRequests({ user, items, config });
-
-    return ({
-      ill: items.map((_e, idx) => hideDefaultRequests[idx] && ill),
-      ezborrow: items.map((_e, idx) => hideDefaultRequests[idx] && ezborrow),
-      login: items.map(() => login),
-      afc: items.map(() => afc),
+showCustomRequests: {
+  login: ({ user, items }) => items.map(() => user === undefined),
+  afc: ({ item, items, config, user}) => {
+    if (!user) return items.map(() => false);
+    const afcEligible = config.values.authorizedStatuses.afc.indexOf(user['bor-status']) > -1;
+    const isBAFCMainCollection = item.delivery.holding.some(({ subLocation, libraryCode}) => {
+      return libraryCode === "BAFC" && subLocation === "Main Collection";
     });
+
+    return items.map(() => afcEligible && isBAFCMainCollection);
   }
-}
+},
 ```
 
 ### `config.values` (optional)
