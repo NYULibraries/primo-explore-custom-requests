@@ -8,5 +8,5 @@
   </div>
   <span ng-if="$ctrl.customLoginService && $ctrl.loggedIn && !$ctrl.user && !$ctrl.userFailure">Retrieving request options...</span>
   <span ng-if="$ctrl.customLoginService && $ctrl.userFailure">Unable to retrieve request options</span>
-  <span ng-if="$ctrl.buttons && $ctrl.buttons.length === 0">{{ $ctrl.noButtonsText }}</span>
+  <span ng-if="$ctrl.noButtons">{{ $ctrl.noButtonsText }}</span>
 </div>

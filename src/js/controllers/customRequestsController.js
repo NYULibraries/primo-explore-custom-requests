@@ -54,18 +54,22 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
   ctrl.refreshControllerValues = () => {
     $scope.$applyAsync(() => {
-      const { user, userFailure, buttons, loggedIn, item, items } = stateService.getState();
-      Object.assign(ctrl, { user, userFailure, buttons, loggedIn });
+      let noButtons = true;
 
       const revealCustomRequestsMap = config.showCustomRequests({ item, items, user, config });
       Object.keys(revealCustomRequestsMap).forEach((buttonKey, buttonIdx, keys) => {
         const revealArray = revealCustomRequestsMap[buttonKey];
-        revealArray.forEach((bool, idx) => {
+        revealArray.forEach((reveal, idx) => {
+          noButtons = noButtons && !reveal;
           const isLast = buttonIdx === keys.length - 1;
-          bool ? ctrl.revealCustomRequest(buttonKey, idx) : null;
-          !isLast ? ctrl.revealDivider(buttonKey, idx) : null;
+
+          reveal && ctrl.revealCustomRequest(buttonKey, idx);
+          !isLast && ctrl.revealDivider(buttonKey, idx);
         });
       });
+
+      const { user, userFailure, buttons, loggedIn, item, items } = stateService.getState();
+      Object.assign(ctrl, { user, userFailure, buttons, loggedIn, noButtons });
     });
   };
 
