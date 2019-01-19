@@ -6,12 +6,12 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     event.stopPropagation();
     href && $window.open(href);
     action && action($injector);
-    !(href || action) && console.warn(`Link ${label} has not been assigned either an 'action' or 'href' property`);
+    !(href || action) && console.warn(`primo-explore-custom-requests: Button "${label}" has not been assigned either an 'action' or 'href' property`);
   };
 
   ctrl.hideRequest = idx => {
     const $el = angular.element($window.document).queryAll('prm-location-items .md-list-item-text')[idx];
-    $el ? $el.children().eq(2).css({ display: 'none' }) : null;
+    $el && $el.children().eq(2).css({ display: 'none' });
   };
 
   ctrl.revealCustomRequest = (id, idx) => {
@@ -57,14 +57,14 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
       let noButtons = true;
 
       const revealCustomRequestsMap = config.showCustomRequests({ item, items, user, config });
-      Object.keys(revealCustomRequestsMap).forEach((buttonKey, buttonIdx, keys) => {
-        const revealArray = revealCustomRequestsMap[buttonKey];
+      config.buttonIds.forEach((buttonId, buttonIdx, ids) => {
+        const revealArray = revealCustomRequestsMap[buttonId];
         revealArray.forEach((reveal, idx) => {
           noButtons = noButtons && !reveal;
-          const isLast = buttonIdx === keys.length - 1;
+          const isLast = buttonIdx === ids.length - 1;
 
-          reveal && ctrl.revealCustomRequest(buttonKey, idx);
-          !isLast && ctrl.revealDivider(buttonKey, idx);
+          reveal && ctrl.revealCustomRequest(buttonId, idx);
+          !isLast && ctrl.revealDivider(buttonId, idx);
         });
       });
 
@@ -83,7 +83,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
       ctrl.setButtonsInState().then(() => {
         const { items, user } = stateService.getState();
-        const props = { config, items, user, item };
+        const props = { user, item, items, config };
         config.hideDefaultRequests(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
       });
     }
