@@ -51,10 +51,9 @@ If using `<primo-explore-custom-login>`, be sure to configure this as well accor
 |---|---|---|
 `buttonIds`| `Array`| List of keys that for conditionally rendered `buttons`.
 `buttonGenerators` |`Object`| Key-value reference of functions used generate button properties for custom `buttons`.
-`showButtons`|`Object`|  Key-value reference of functions used determine whether a custom link from `buttons` is rendered.
 |`noButtonsText`|`String` (optional) |Message to show if no buttons were generated from `buttonGenerators`. Default: `Request not available`.
-`hideDefaultRequest`| `Function` (optional) | Used to determine whether to hide all the default, out-of-the-box request buttons for specific items within a location. Default: hide none.
-`hideCustomRequest`| `Function` (optional) | Used to determine whether to hide all the custom request buttons for specific items within a location. Default: hide none.
+`hideDefaultRequests`| `Function` (optional) | Used to determine whether to hide all the default, out-of-the-box request buttons for specific items within a location. Default: hide none.
+`showCustomRequests`| `Function` (optional) | Used to determine whether to hide all the custom request buttons for specific items within a location. Default: hide none.
 | `values` | `Object` (optional) | Dictionary used for arbitrary data and utility functions that may be used in other aspects of your configuration.
 
 ### `config.buttonIds`
@@ -114,34 +113,6 @@ For example:
 }
 ```
 
-### `config.showButtons`
-
-Keys refer to `buttonIds`. Values are pure functions which return a boolean.
-
-Functions take the following named parameters via a POJO:
-* `user`: `Object` representation of a PDS user as taken from the `primoExploreCustomLoginService`. `undefined` if when user is not logged in, or the optional peer dependency has not been installed. `null` if a user is logged in, but the PDS API fetch failed.
-* `item`: Record data. `$ctrl.item` object from the `<prm-location-items>` component.
-* `config`: The configuration object itself for internal references.
-
-
-```js
-{
-  showButtons: {
-    ezborrow: ({ user, item, config }) => {
-      if (!user) return false;
-      const isBook = ['BOOK', 'BOOKS'].some(type => item.pnx.addata.ristype.indexOf(type) > -1);
-      return isBook && config.values.authorizedStatuses.ezborrow.indexOf(user['bor-status']) > -1;
-    },
-    ill: ({ user, item, config }) => {
-      if (!user) return false;
-      const ezborrow = config.showButtons.ezborrow({ user, item, config });
-      return !ezborrow && config.values.authorizedStatuses.ill.indexOf(user['bor-status']) > -1;
-    },
-    login: ({ user }) => user !== undefined,
-  }
-}
-```
-
 ### `config.noButtonsText` (optional)
 
 The text to show when no buttons are rendered. By default, renders `Request not available`
@@ -152,7 +123,7 @@ The text to show when no buttons are rendered. By default, renders `Request not 
   noButtonsText: '{item.request.blocked}',
 }
 ```
-### `config.hideDefaultRequest` (optional)
+### `config.hideDefaultRequests` (optional)
 
 Determines whether to hide default buttons/text on a per-item basis. By default, hides none.
 
@@ -162,7 +133,7 @@ A function which takes the following named parameters via a POJO:
 * `item`: Record data. `$ctrl.item` object from the `<prm-location-items>` component.
 * `config`: The configuration object itself for internal references.
 
-Functions should be pure and returns an `Array` of `Boolean`s that correspond to each element in `items`. For example, to hide only the second default action of three items should return `[false, true, false]`.
+Functions should be pure and returns an `Array` of `Boolean`s that correspond to each element in `items`. For example, to hide the default request actions of only the second of three holdings, return `[false, true, false]`.
 
 ```js
 {
@@ -182,18 +153,42 @@ Functions should be pure and returns an `Array` of `Boolean`s that correspond to
 }
 ```
 
-### `config.hideCustomRequest` (optional)
+### `config.showCustomRequests` (optional)
 
-Link `config.hideDefaultRequest`, except determines whether to hide the *custom* buttons/text on a per-item basis.
+Determines whether to show the *custom* buttons/text on a per-holding basis. By default, shows all.
 
-By default, hides none.
+A function which takes the following named parameters via a POJO:
+* `user`: `Object` representation of a PDS user as taken from the `primoExploreCustomLoginService`. `undefined` if when user is not logged in, or the optional peer dependency has not been installed. `null` if a user is logged in, but the PDS API fetch failed.
+* `items`: An array of holdings data. `$ctrl.currLoc.items` from the `<prm-location-items>` component.
+* `item`: Record data. `$ctrl.item` object from the `<prm-location-items>` component.
+* `config`: The configuration object itself for internal references.
+
+Functions should be pure and returns an object with `buttonIds` as properites.
+
+The values of this resulting object are an `Array` of `Boolean`s that correspond to each element in `items`. For example, to show a custom request action for only the second holding `[false, true, false]`.
 
 ```js
 {
-  hideCustomRequest: props => props.config.hideDefaultRequest(props).map(boolean => !boolean)
+  showCustomRequests: ({ item, items, config, user}) => {
+    const { showIll, showEzborrow, showLogin, showAfc } = config.values.functions;
+
+    const showArgs = { user, item, config };
+    const ill = showIll(showArgs);
+    const ezborrow = showEzborrow(showArgs);
+    const login = showLogin(showArgs);
+    const afc = showAfc(showArgs);
+    const hideDefaultRequests = config.hideDefaultRequests({ user, items, config });
+
+    return ({
+      ill: items.map((_e, idx) => hideDefaultRequests[idx] && ill),
+      ezborrow: items.map((_e, idx) => hideDefaultRequests[idx] && ezborrow),
+      login: items.map(() => login),
+      afc: items.map(() => afc),
+    });
+  }
 }
 ```
 
 ### `config.values` (optional)
 
-A dictionary of arbitrary values to be referred to within your functions. This is useful for more complex logic that you may want to test against, or reuse in multiple functions.
+A dictionary of arbitrary values to be referred to within your functions. This is useful for more complex logic for which you may want to build unit tests, or reuse in multiple functions.
