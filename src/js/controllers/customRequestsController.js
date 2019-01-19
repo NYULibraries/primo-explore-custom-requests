@@ -6,40 +6,42 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     event.stopPropagation();
     href && $window.open(href);
     action && action($injector);
-    !(href || action) && console.warn(`Link ${label} has not been assigned either an 'action' or 'href' property`);
+    !(href || action) && console.warn(`primo-explore-custom-requests: Button "${label}" has not been assigned either an 'action' or 'href' property`);
   };
 
-  ctrl.cssCustomRequest = css => idx => {
-    const $el = angular.element($window.document).queryAll('prm-location-item-after')[idx];
-    $el ? $el.css(css) : null;
-  };
-
-  ctrl.cssRequest = css => idx => {
+  ctrl.hideRequest = idx => {
     const $el = angular.element($window.document).queryAll('prm-location-items .md-list-item-text')[idx];
-    $el ? $el.children().eq(2).css(css) : null;
+    $el && $el.children().eq(2).css({ display: 'none' });
   };
 
-  ctrl.hideRequest = ctrl.cssRequest({ display: 'none' });
-  ctrl.hideCustomRequest = ctrl.cssCustomRequest({ display: 'none' });
+  ctrl.revealCustomRequest = (id, idx) => {
+    const $el = angular.element($window.document).queryAll(`.custom-request-${id}`)[idx];
+    $el && $el.parent().css({ display: 'flex' });
+  };
+
+  ctrl.revealDivider = (id, idx) => {
+    const $el = angular.element($window.document).queryAll(`.custom-request-${id}`)[idx];
+    $el && $el.parent().query('.skewed-divider').css({ display: 'block' });
+  };
 
   ctrl.setButtonsInState = () => {
-    const loggedIn = ctrl.customLoginService ? ctrl.customLoginService.isLoggedIn : undefined;
-
-    let promise;
-    if (loggedIn) {
-      promise = ctrl.customLoginService.fetchPDSUser();
+    let loggedIn, promise;
+    if (ctrl.customLoginService) {
+      loggedIn = ctrl.customLoginService.isLoggedIn;
+      promise = loggedIn ? ctrl.customLoginService.fetchPDSUser() : Promise.resolve(undefined);
     } else {
+      loggedIn = false;
       promise = Promise.resolve(undefined);
     }
 
     return promise
       .then(user => {
         const item = ctrl.parentCtrl.item;
-        const { buttonIds, showButtons, buttonGenerators } = config;
+        const { buttonIds, buttonGenerators } = config;
+
         const buttons = buttonIds.reduce((arr, id) => {
-          const [showButton, buttonGenerator] = [showButtons, buttonGenerators].map(fxn => fxn[id]);
-          const show = showButton({ config, user, item });
-          return arr.concat(show ? [ buttonGenerator({ item, config }) ] : []);
+          const buttonGenerator = buttonGenerators[id];
+          return [ ...arr, { id, ...buttonGenerator({ item, config }) } ];
         }, []);
 
         stateService.setState({ buttons, user, loggedIn });
@@ -52,24 +54,37 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
   ctrl.refreshControllerValues = () => {
     $scope.$applyAsync(() => {
-      const { user, userFailure, buttons, loggedIn } = stateService.getState();
-      Object.assign(ctrl, { user, userFailure, buttons, loggedIn });
+      let noButtons = true;
+
+      const revealCustomRequestsMap = config.showCustomRequests({ item, items, user, config });
+      config.buttonIds.forEach((buttonId, buttonIdx, ids) => {
+        const revealArray = revealCustomRequestsMap[buttonId];
+        revealArray.forEach((reveal, idx) => {
+          noButtons = noButtons && !reveal;
+          const isLast = buttonIdx === ids.length - 1;
+
+          reveal && ctrl.revealCustomRequest(buttonId, idx);
+          !isLast && ctrl.revealDivider(buttonId, idx);
+        });
+      });
+
+      const { user, userFailure, buttons, loggedIn, item, items } = stateService.getState();
+      Object.assign(ctrl, { user, userFailure, buttons, loggedIn, noButtons });
     });
   };
 
   ctrl.$onInit = () => {
     ctrl.customLoginService = $injector.has('primoExploreCustomLoginService') && $injector.get('primoExploreCustomLoginService');
+    const { currLoc, item } = ctrl.parentCtrl;
 
     const stateItems = stateService.getState().items;
-    if (stateItems !== ctrl.parentCtrl.currLoc.items) {
-      stateService.setState({ items: ctrl.parentCtrl.currLoc.items });
+    if (stateItems !== currLoc.items) {
+      stateService.setState({ items: currLoc.items, item });
 
       ctrl.setButtonsInState().then(() => {
-        const { hideCustomRequest, hideDefaultRequest } = config;
         const { items, user } = stateService.getState();
-        const props = { config, items, user };
-        hideDefaultRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
-        hideCustomRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideCustomRequest(idx) : null);
+        const props = { user, item, items, config };
+        config.hideDefaultRequests(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
       });
     }
   };

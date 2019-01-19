@@ -12,8 +12,8 @@ export default function primoExploreCustomRequestsConfigService(config, $filter)
 
   const merge = angular.merge(
     {
-      hideCustomRequest: ({ items }) => items.map(() => false),
-      hideDefaultRequest: ({ items }) => items.map(() => false),
+      showCustomRequests: ({ items, config }) => config.buttonIds.reduce((res, id) => ({ ...res, [id]: items.map(() => true) }), {}),
+      hideDefaultRequests: ({ items }) => items.map(() => false),
     },
     config,
     {
