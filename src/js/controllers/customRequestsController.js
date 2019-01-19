@@ -14,9 +14,14 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     $el ? $el.children().eq(2).css({ display: 'none' }) : null;
   };
 
-  ctrl.hideCustomRequest = (id, idx) => {
+  ctrl.revealCustomRequest = (id, idx) => {
     const $el = angular.element($window.document).queryAll(`.custom-request-${id}`)[idx];
-    $el && $el.parent().css({ display: 'none' });
+    $el && $el.parent().css({ display: 'flex' });
+  };
+
+  ctrl.revealDivider = (id, idx) => {
+    const $el = angular.element($window.document).queryAll(`.custom-request-${id}`)[idx];
+    $el && $el.parent().query('.skewed-divider').css({ display: 'block' });
   };
 
   ctrl.setButtonsInState = () => {
@@ -32,11 +37,11 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     return promise
       .then(user => {
         const item = ctrl.parentCtrl.item;
-        const { buttonIds, showButtons, buttonGenerators } = config;
+        const { buttonIds, buttonGenerators } = config;
+
         const buttons = buttonIds.reduce((arr, id) => {
-          const [showButton, buttonGenerator] = [showButtons, buttonGenerators].map(fxn => fxn[id]);
-          const show = showButton({ config, user, item });
-          return arr.concat(show ? [{ id, ...buttonGenerator({ item, config }) } ] : []);
+          const buttonGenerator = buttonGenerators[id];
+          return [ ...arr, { id, ...buttonGenerator({ item, config }) } ];
         }, []);
 
         stateService.setState({ buttons, user, loggedIn });
@@ -52,11 +57,13 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
       const { user, userFailure, buttons, loggedIn, item, items } = stateService.getState();
       Object.assign(ctrl, { user, userFailure, buttons, loggedIn });
 
-      const hideCustomRequestsMap = config.hideCustomRequests({ item, items, user, config });
-      Object.keys(hideCustomRequestsMap).forEach(buttonKey => {
-        const hideArray = hideCustomRequestsMap[buttonKey];
-        hideArray.forEach((bool, idx) => {
-          bool ? ctrl.hideCustomRequest(buttonKey, idx) : null;
+      const revealCustomRequestsMap = config.showCustomRequests({ item, items, user, config });
+      Object.keys(revealCustomRequestsMap).forEach((buttonKey, buttonIdx, keys) => {
+        const revealArray = revealCustomRequestsMap[buttonKey];
+        revealArray.forEach((bool, idx) => {
+          const isLast = buttonIdx === keys.length - 1;
+          bool ? ctrl.revealCustomRequest(buttonKey, idx) : null;
+          !isLast ? ctrl.revealDivider(buttonKey, idx) : null;
         });
       });
     });
@@ -73,7 +80,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
       ctrl.setButtonsInState().then(() => {
         const { items, user } = stateService.getState();
         const props = { config, items, user, item };
-        config.hideAllDefaultRequests(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
+        config.hideDefaultRequests(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
       });
     }
   };
