@@ -24,6 +24,11 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     $el && $el.parent().query('.skewed-divider').css({ display: 'block' });
   };
 
+  ctrl.revealNoButtonText = idx => {
+    const $el = angular.element($window.document).queryAll(`.custom-requests-empty`)[idx];
+    $el && $el.css({ display: 'block' });
+  };
+
   ctrl.setButtonsInState = () => {
     let loggedIn, promise;
     if (ctrl.customLoginService) {
@@ -54,22 +59,42 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
   ctrl.refreshControllerValues = () => {
     $scope.$applyAsync(() => {
-      let noButtons = true;
       const { user, userFailure, buttons, loggedIn, item, items } = stateService.getState();
 
-      Object.keys(config.showCustomRequests).forEach(buttonId => {
-        const revealArray = config.showCustomRequests[buttonId]({ item, items, user, config });
+      // construct { key: [true, false], key2: [true, true], etc. }
+      const revealsMap = config.buttonIds.reduce((res, buttonKey) => ({
+        ...res,
+        [buttonKey]: config.showCustomRequests[buttonKey]({ item, items, user, config })
+      }), {});
 
-        const lastIdx = revealArray.lastIndexOf(true);
-        revealArray.forEach((reveal, idx) => {
-          noButtons = noButtons && !reveal;
-
-          reveal && ctrl.revealCustomRequest(buttonId, idx);
-          reveal && idx !== lastIdx && ctrl.revealDivider(buttonId, idx);
+      // try to turn config into: [['ill', 'login'], ['ezborrow'] ] etc.
+      const revealsLists = config.buttonIds.reduce((res, buttonKey) => {
+        revealsMap[buttonKey].forEach((reveal, holdingIdx) => {
+          reveal ? res[holdingIdx].push(buttonKey) : null;
         });
+        return res;
+      }, items.map(() => []));
+
+      // go through revealsList and reveal based on key (buttonId) and position (holdingIdx)
+      revealsLists.forEach((list, holdingIdx) => {
+        list.forEach((buttonKey, buttonIdx) => {
+          ctrl.revealCustomRequest(buttonKey, holdingIdx);
+          if (buttonIdx !== list.length - 1) {
+            ctrl.revealDivider(buttonKey, holdingIdx);
+          }
+        });
+
+        if (list.length === 0) {
+          ctrl.revealNoButtonText(holdingIdx);
+        }
       });
 
-      Object.assign(ctrl, { user, userFailure, buttons, loggedIn, noButtons });
+      Object.assign(ctrl, {
+        user, userFailure, buttons, loggedIn,
+        userLoadingText: config.userLoadingText,
+        userFailureText: config.userFailureText,
+        noButtonsText: config.noButtonsText,
+      });
     });
   };
 

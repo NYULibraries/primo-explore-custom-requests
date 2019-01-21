@@ -51,6 +51,8 @@ If using `<primo-explore-custom-login>`, be sure to configure this as well accor
 |---|---|---|
 `buttonIds`| `Array`| List of keys that for conditionally rendered `buttons`.
 `buttonGenerators` |`Object`| Key-value reference of functions used generate button properties for custom `buttons`.
+|`noButtonsText`|`String` (optional) | Message to show if no buttons were generated from `buttonGenerators` and the PDS user API didn't fail. Default: `Request not available`.
+|`noButtonsText`|`String` (optional) | Message to show if no buttons were generated from `buttonGenerators`. Default: `Request not available`.
 |`noButtonsText`|`String` (optional) | Message to show if no buttons were generated from `buttonGenerators`. Default: `Request not available`.
 `hideDefaultRequests`| `Function` (optional) | Used to determine whether to hide any default, out-of-the-box request buttons for specific holdings within a location. Functions return an array of booleans. Default: hide none.
 `showCustomRequests`| `Object` (optional) | Used to determine whether to show a specific custom request button for specific holdings within a location. Functions return an array of booleans. Default: shows all.
@@ -113,6 +115,30 @@ The text to show when no buttons are rendered. By default, renders `Request not 
   noButtonsText: '{item.request.blocked}',
 }
 ```
+
+### `config.userFailureText` (optional)
+
+The text to show when no buttons are rendered. By default, renders `Unable to retrieve request options`
+
+*Note*: Has access to custom backoffice values via `{backoffice.key.value}` syntax:
+```js
+{
+  userFailureText: '{item.request.failure}',
+}
+```
+
+### `config.userLoadingText` (optional)
+
+The text to show when no buttons are rendered. By default, renders `Retrieving request options...`
+
+*Note*: Has access to custom backoffice values via `{backoffice.key.value}` syntax:
+```js
+{
+  userLoadingText: '{item.request.loading}',
+}
+```
+
+
 ### `config.hideDefaultRequests` (optional)
 
 Determines whether to hide default buttons/text on a per-item basis. By default, hides none.
@@ -123,7 +149,7 @@ A function which takes the following named parameters via a POJO:
 * `item`: Record data. `$ctrl.item` object from the `<prm-location-items>` component.
 * `config`: The configuration object itself for internal references.
 
-Functions should be pure and returns an `Array` of `Boolean`s that correspond to each element in `items`. For example, to hide the default request actions of only the second of three holdings, return `[false, true, false]`.
+Functions should have no side-effects and return an `Array` of `Boolean`s that correspond to each element in `items`. For example, to hide the default request actions of only the second of three holdings, return `[false, true, false]`.
 
 ```js
 {
@@ -155,7 +181,7 @@ Each function takes the following named parameters via a POJO:
 * `item`: Record data. `$ctrl.item` object from the `<prm-location-items>` component.
 * `config`: The configuration object itself for internal references.
 
-Functions should be pure and returns an `Array` of `Boolean`s that correspond to each element in `items`. For example, to show the custom request actions for only the second of three holdings, return `[false, true, false]`.
+Functions should have no side-effects and return an `Array` of `Boolean`s that correspond to each element in `items`. For example, to show the custom request actions for only the second of three holdings, return `[false, true, false]`.
 
 ```js
 showCustomRequests: {
