@@ -1,7 +1,3 @@
-const store = {
-
-};
-
 prmLocationItemAfterController.$inject = ['$window', '$scope', '$injector', 'customRequestsStateService', 'customRequestsConfigService', '$element'];
 export default function prmLocationItemAfterController($window, $scope, $injector, stateService, config, $element) {
   const ctrl = this;
@@ -37,10 +33,10 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     let loggedIn, promise;
     if (ctrl.customLoginService) {
       loggedIn = ctrl.customLoginService.isLoggedIn;
-      // promise = loggedIn ? ctrl.customLoginService.fetchPDSUser() : Promise.resolve(undefined);
-      // For delayed PDS testing:
-      const delay = (t, v) => new Promise((res) => setTimeout(res.bind(null, v), t));
-      promise = loggedIn ? (store.user && Promise.resolve(store.user)) || delay(3000, {['bor-status']: '50' }).then((user) => { store.user = user; return user; }) : Promise.resolve(undefined);
+      promise = loggedIn ? ctrl.customLoginService.fetchPDSUser() : Promise.resolve(undefined);
+      // For delayed PDS testing: (first place store = {} outside scope)
+      // const delay = (t, v) => new Promise((res) => setTimeout(res.bind(null, v), t));
+      // promise = loggedIn ? (store.user && Promise.resolve(store.user)) || delay(3000, {['bor-status']: '50' }).then((user) => { store.user = user; return user; }) : Promise.resolve(undefined);
     } else {
       loggedIn = false;
       promise = Promise.resolve(undefined);
@@ -107,8 +103,6 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     });
   };
 
-  $window.refreshReveals = ctrl.refreshReveals;
-
   ctrl.$onInit = () => {
     ctrl.customLoginService = $injector.has('primoExploreCustomLoginService') && $injector.get('primoExploreCustomLoginService');
     const { currLoc, item } = ctrl.parentCtrl;
@@ -123,8 +117,10 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
         const props = { user, item, items, config };
 
         config.hideDefaultRequests(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
-        ctrl.refreshControllerValues();
-        ctrl.refreshReveals();
+        $scope.$applyAsync(() => {
+          ctrl.refreshControllerValues();
+          ctrl.refreshReveals();
+        });
       });
     }
   };
