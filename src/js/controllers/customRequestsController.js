@@ -1,4 +1,4 @@
-const store = {};
+// const store = {};
 prmLocationItemAfterController.$inject = ['$window', '$scope', '$injector', 'customRequestsStateService', 'customRequestsConfigService', '$element'];
 export default function prmLocationItemAfterController($window, $scope, $injector, stateService, config, $element) {
   const ctrl = this;
@@ -14,9 +14,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     const $els = angular.element($window.document).queryAll('prm-location-items .md-list-item-text');
 
     Array.from($els).forEach(($el) => {
-      $el.children().eq(2).css({
-        display: 'none'
-      });
+      $el.children().eq(2).css({display: 'none' });
     });
   };
 
@@ -44,10 +42,10 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     let loggedIn, promise;
     if (ctrl.customLoginService) {
       loggedIn = ctrl.customLoginService.isLoggedIn;
-      // promise = loggedIn ? ctrl.customLoginService.fetchPDSUser() : Promise.resolve(undefined);
+      promise = loggedIn ? ctrl.customLoginService.fetchPDSUser() : Promise.resolve(undefined);
       // For delayed PDS testing: (first place store = {} outside scope)
-      const delay = (t, v) => new Promise((res) => setTimeout(res.bind(null, v), t));
-      promise = loggedIn ? (store.user && Promise.resolve(store.user)) || delay(3000, {['bor-status']: '50' }).then((user) => { store.user = user; return user; }) : Promise.resolve(undefined);
+      // const delay = (t, v) => new Promise((res) => setTimeout(res.bind(null, v), t));
+      // promise = loggedIn ? (store.user && Promise.resolve(store.user)) || delay(3000, {['bor-status']: '50' }).then((user) => { store.user = user; return user; }) : Promise.resolve(undefined);
     } else {
       loggedIn = false;
       promise = Promise.resolve(undefined);
