@@ -10,9 +10,19 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     !(href || action) && console.warn(`primo-explore-custom-requests: Button "${label}" has not been assigned either an 'action' or 'href' property`);
   };
 
-  ctrl.hideRequest = idx => {
+  ctrl.hideAllRequests = () => {
+    const $els = angular.element($window.document).queryAll('prm-location-items .md-list-item-text');
+
+    Array.from($els).forEach(($el) => {
+      $el.children().eq(2).css({
+        display: 'none'
+      });
+    });
+  };
+
+  ctrl.revealRequest = idx => {
     const $el = angular.element($window.document).queryAll('prm-location-items .md-list-item-text')[idx];
-    $el && $el.children().eq(2).css({ display: 'none' });
+    $el && $el.children().eq(2).css({ display: 'flex' });
   };
 
   ctrl.revealCustomRequest = (id, idx) => {
@@ -104,6 +114,10 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     });
   };
 
+  ctrl.$postLink = () => {
+    ctrl.hideAllRequests();
+  };
+
   ctrl.$onInit = () => {
     ctrl.customLoginService = $injector.has('primoExploreCustomLoginService') && $injector.get('primoExploreCustomLoginService');
     const { currLoc, item } = ctrl.parentCtrl;
@@ -117,7 +131,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
         const { item, items, user } = stateService.getState();
         const props = { user, item, items, config };
 
-        config.hideDefaultRequests(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
+        config.hideDefaultRequests(props).forEach((toHide, idx) => !toHide ? ctrl.revealRequest(idx) : null);
         $scope.$applyAsync(() => {
           ctrl.refreshControllerValues();
           ctrl.refreshReveals();
