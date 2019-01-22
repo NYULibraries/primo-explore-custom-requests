@@ -51,11 +51,12 @@ If using `<primo-explore-custom-login>`, be sure to configure this as well accor
 |---|---|---|
 `buttonIds`| `Array`| List of keys that for conditionally rendered `buttons`.
 `buttonGenerators` |`Object`| Key-value reference of functions used generate button properties for custom `buttons`.
-`showButtons`|`Object`|  Key-value reference of functions used determine whether a custom link from `buttons` is rendered.
-|`noButtonsText`|`String` (optional) |Message to show if no buttons were generated from `buttonGenerators`. Default: `Request not available`.
-`hideDefaultRequest`| `Function` (optional) | Used to determine whether to hide all the default, out-of-the-box request buttons for specific items within a location. Default: hide none.
-`hideCustomRequest`| `Function` (optional) | Used to determine whether to hide all the custom request buttons for specific items within a location. Default: hide none.
-| `values` | `Object` (optional) | Dictionary used for arbitrary data and utility functions that may be used in other aspects of your configuration.
+`noButtonsText`|`String` (optional) | Message to show if no buttons were generated from `buttonGenerators`, the default buttons are hidden, and the PDS user API didn't fail. Default: `Request not available`.
+`userFailureText`|`String` (optional) | Message to show if no buttons were generated from `buttonGenerators`. Default: `Request not available`.
+`userLoadingText`|`String` (optional) | Message to show if no buttons were generated from `buttonGenerators`. Default: `Request not available`.
+`hideDefaultRequests`| `Function` (optional) | Used to determine whether to hide any default, out-of-the-box request buttons for specific holdings within a location. Functions return an array of booleans. Default: hide none.
+`showCustomRequests`| `Object` (optional) | Used to determine whether to show a specific custom request button for specific holdings within a location. Functions return an array of booleans. Default: shows all.
+`values` | `Object` (optional) | Dictionary used for arbitrary data and utility functions that may be used in other aspects of your configuration.
 
 ### `config.buttonIds`
 
@@ -114,32 +115,60 @@ For example:
 }
 ```
 
-### `config.showButtons`
+### `config.hideDefaultRequests` (optional)
 
-Keys refer to `buttonIds`. Values are pure functions which return a boolean.
+Determines whether to hide default buttons/text on a per-item basis. By default, hides none.
 
-Functions take the following named parameters via a POJO:
+A function which takes the following named parameters via a POJO:
 * `user`: `Object` representation of a PDS user as taken from the `primoExploreCustomLoginService`. `undefined` if when user is not logged in, or the optional peer dependency has not been installed. `null` if a user is logged in, but the PDS API fetch failed.
-* `item`: `$ctrl.item` object from the `<prm-location-items>` component.
+* `items`: the array of items in `$ctrl.currLoc.items` from the `<prm-location-items>` component.
 * `config`: The configuration object itself for internal references.
 
+Functions should have no side-effects and return an `Array` of `Boolean`s that correspond to each holding in `items`. For example, to hide the default request actions of only the second of three holdings, return `[false, true, false]`.
 
 ```js
-{
-  showButtons: {
-    ezborrow: ({ user, item, config }) => {
-      if (!user) return false;
-      const isBook = ['BOOK', 'BOOKS'].some(type => item.pnx.addata.ristype.indexOf(type) > -1);
-      return isBook && config.values.authorizedStatuses.ezborrow.indexOf(user['bor-status']) > -1;
-    },
-    ill: ({ user, item, config }) => {
-      if (!user) return false;
-      const ezborrow = config.showButtons.ezborrow({ user, item, config });
-      return !ezborrow && config.values.authorizedStatuses.ill.indexOf(user['bor-status']) > -1;
-    },
-    login: ({ user }) => user !== undefined,
+hideDefaultRequests: ({ items, config, user }) => {
+  if (user === undefined) {
+    return items.map(() => true);
   }
+
+  const { checkAreItemsUnique, checkIsAvailable } = config.values.functions;
+
+  const availabilityStatuses = items.map(checkIsAvailable);
+  const itemsAreUnique = checkAreItemsUnique(items);
+  const allUnavailable = availabilityStatuses.every(status => status === false);
+
+  return availabilityStatuses.map(isAvailable => allUnavailable || (itemsAreUnique && !isAvailable));
 }
+```
+
+### `config.showCustomRequests` (optional)
+
+Determines whether to show the *custom* buttons/text on a per-holding basis. By default, shows all.
+
+Keys refer to `buttonIds`.
+
+Each function takes the following named parameters via a POJO:
+* `user`: `Object` representation of a PDS user as taken from the `primoExploreCustomLoginService`. `undefined` if when user is not logged in, or the optional peer dependency has not been installed. `null` if a user is logged in, but the PDS API fetch failed.
+* `items`: An array of holdings data. `$ctrl.currLoc.items` from the `<prm-location-items>` component.
+* `item`: Record data. `$ctrl.item` object from the `<prm-location-items>` component.
+* `config`: The configuration object itself for internal references.
+
+Functions should have no side-effects and return an `Array` of `Boolean`s that correspond to each element in `items`. For example, to show the custom request actions for only the second of three holdings, return `[false, true, false]`.
+
+```js
+showCustomRequests: {
+  login: ({ user, items }) => items.map(() => user === undefined),
+  afc: ({ item, items, config, user}) => {
+    if (!user) return items.map(() => false);
+    const afcEligible = config.values.authorizedStatuses.afc.indexOf(user['bor-status']) > -1;
+    const isBAFCMainCollection = item.delivery.holding.some(({ subLocation, libraryCode}) => {
+      return libraryCode === "BAFC" && subLocation === "Main Collection";
+    });
+
+    return items.map(() => afcEligible && isBAFCMainCollection);
+  }
+},
 ```
 
 ### `config.noButtonsText` (optional)
@@ -152,47 +181,29 @@ The text to show when no buttons are rendered. By default, renders `Request not 
   noButtonsText: '{item.request.blocked}',
 }
 ```
-### `config.hideDefaultRequest` (optional)
 
-Determines whether to hide default buttons/text on a per-item basis. By default, hides none.
+### `config.userFailureText` (optional)
 
-A function which takes the following named parameters via a POJO:
-* `user`: `Object` representation of a PDS user as taken from the `primoExploreCustomLoginService`. `undefined` if when user is not logged in, or the optional peer dependency has not been installed. `null` if a user is logged in, but the PDS API fetch failed.
-* `items`: the array of items in `$ctrl.currLoc.items` from the `<prm-location-items>` component.
-* `config`: The configuration object itself for internal references.
+The text to show when no buttons are rendered. By default, renders `Unable to retrieve request options`
 
-Functions should be pure and returns an `Array` of `Boolean`s that correspond to each element in `items`. For example, to hide only the second default action of three items should return `[false, true, false]`.
-
+*Note*: Has access to custom backoffice values via `{backoffice.key.value}` syntax:
 ```js
 {
-  hideDefaultRequest: ({ items, config, user }) => {
-    if (user === undefined) {
-      return items.map(() => true);
-    }
-
-    const { checkAreItemsUnique, checkIsAvailable } = config.values.functions;
-
-    const availabilityStatuses = items.map(checkIsAvailable);
-    const itemsAreUnique = checkAreItemsUnique(items);
-    const allUnavailable = availabilityStatuses.every(status => status === false);
-
-    return availabilityStatuses.map(isAvailable => allUnavailable || (itemsAreUnique && !isAvailable));
-  },
+  userFailureText: '{item.request.failure}',
 }
 ```
 
-### `config.hideCustomRequest` (optional)
+### `config.userLoadingText` (optional)
 
-Link `config.hideDefaultRequest`, except determines whether to hide the *custom* buttons/text on a per-item basis.
+The text to show when no buttons are rendered. By default, renders `Retrieving request options...`
 
-By default, hides none.
-
+*Note*: Has access to custom backoffice values via `{backoffice.key.value}` syntax:
 ```js
 {
-  hideCustomRequest: props => props.config.hideDefaultRequest(props).map(boolean => !boolean)
+  userLoadingText: '{item.request.loading}',
 }
 ```
 
 ### `config.values` (optional)
 
-A dictionary of arbitrary values to be referred to within your functions. This is useful for more complex logic that you may want to test against, or reuse in multiple functions.
+A dictionary of arbitrary functions and values to be referred to within your functions. This is useful for more complex logic that you may want to test against, or reuse in multiple functions.

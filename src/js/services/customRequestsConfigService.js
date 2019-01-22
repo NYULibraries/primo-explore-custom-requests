@@ -12,13 +12,15 @@ export default function primoExploreCustomRequestsConfigService(config, $filter)
 
   const merge = angular.merge(
     {
-      hideCustomRequest: ({ items }) => items.map(() => false),
-      hideDefaultRequest: ({ items }) => items.map(() => false),
+      showCustomRequests: config.buttonIds.reduce((res, id) => ({ ...res, [id]: ({ items }) => items.map(() => true) }), {}),
+      hideDefaultRequests: ({ items }) => items.map(() => false),
     },
     config,
     {
       buttonIds: config.buttonIds.map(svc.translate),
       noButtonsText: config.noButtonsText ? svc.translate(config.noButtonsText) : 'Request not available',
+      userFailureText: config.userFailureText ? svc.translate(config.userFailureText) : 'Unable to retrieve request options',
+      userLoadingText: config.userLoadingText ? svc.translate(config.userLoadingText) : 'Retrieving request options...',
     }
   );
 
