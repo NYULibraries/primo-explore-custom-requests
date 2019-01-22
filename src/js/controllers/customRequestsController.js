@@ -1,6 +1,6 @@
 // const store = {};
-prmLocationItemAfterController.$inject = ['$window', '$scope', '$injector', 'customRequestsStateService', 'customRequestsConfigService', '$element'];
-export default function prmLocationItemAfterController($window, $scope, $injector, stateService, config, $element) {
+prmLocationItemAfterController.$inject = ['$window', '$scope', '$injector', 'customRequestsStateService', 'customRequestsConfigService', '$timeout'];
+export default function prmLocationItemAfterController($window, $scope, $injector, stateService, config, $timeout) {
   const ctrl = this;
 
   ctrl.handleClick = (event, { action, href, label }) => {
@@ -53,7 +53,6 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
     stateService.setState({ loggedIn });
     const { item } = stateService.getState();
-
     return promise
       .then(user => {
         const { buttonIds, buttonGenerators } = config;
@@ -112,6 +111,19 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     });
   };
 
+  ctrl.DOMRefresh = () => {
+    $scope.$applyAsync(() => {
+      ctrl.refreshControllerValues();
+    });
+
+    $timeout(() => {
+      // wrapped in $timeout because DOM must update with above $applyAsync before manual reveal process.
+      // Because digest cycle is ~10ms, this will more likely ensure the DOM manipulations happen
+      // after refreshControllerValues + DOM updates are complete.
+      ctrl.refreshReveals();
+    }, 100);
+  };
+
   ctrl.$postLink = () => {
     ctrl.hideAllRequests();
   };
@@ -130,23 +142,17 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
         const props = { user, item, items, config };
 
         config.hideDefaultRequests(props).forEach((toHide, idx) => !toHide ? ctrl.revealRequest(idx) : null);
-        $scope.$applyAsync(() => {
-          ctrl.refreshControllerValues();
-          ctrl.refreshReveals();
-        });
+        ctrl.DOMRefresh();
       });
     }
   };
 
   ctrl.$doCheck = () => {
     const serviceState = stateService.getState();
-
+    ctrl.state = ctrl.state || serviceState;
     if (ctrl.state !== serviceState) {
       ctrl.state = stateService.getState();
-      $scope.$applyAsync(() => {
-        ctrl.refreshControllerValues();
-        ctrl.refreshReveals();
-      });
+      ctrl.DOMRefresh();
     }
   };
 }
