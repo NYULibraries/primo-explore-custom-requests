@@ -1,6 +1,10 @@
 {
   "name": "primo-explore-custom-requests",
+<<<<<<< HEAD
   "version": "0.0.8",
+=======
+  "version": "0.0.4",
+>>>>>>> master
   "description": "Customized item requests in Primo NUI",
   "main": "./dist/index.js",
   "scripts": {
@@ -28,22 +32,8 @@
     "@babel/core": "^7.2.2",
     "@babel/plugin-proposal-object-rest-spread": "^7.2.0",
     "@babel/preset-env": "^7.2.3",
-    "angular": "^1.7.6",
-    "angular-mocks": "^1.7.6",
-    "babel-loader": "^8.0.5",
     "babel-plugin-transform-html-import-to-string": "^0.0.1",
     "eslint": "^5.12.0",
-    "jasmine-core": "^3.3.0",
-    "karma": "^3.1.4",
-    "karma-chrome-launcher": "^2.2.0",
-    "karma-jasmine": "^2.0.1",
-    "karma-sourcemap-loader": "^0.3.7",
-    "karma-spec-reporter": "^0.0.32",
-    "karma-webpack": "^3.0.5",
-    "puppeteer": "^1.11.0",
     "rimraf": "^2.6.3"
-  },
-  "dependencies": {
-    "webpack": "^4.28.4"
   }
 }

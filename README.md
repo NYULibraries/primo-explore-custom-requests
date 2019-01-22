@@ -93,15 +93,53 @@ For example:
 ```js
 {
   buttonGenerators: {
-    ill: ({ item, config }) => ({
-      href: `${config.values.baseUrls.ill}?${item.delivery.GetIt2.link.match(/resolve?(.*)/)}`,
-      label: 'Request ILL',
-    }),
-    login: () => ({
-      label: 'Login to see request options',
-      action: ($injector) => $injector.get('customLoginService').login(),
-    }),
-  },
+      ezborrow: ({ item, config }) => {
+        const title = item.pnx.addata.btitle ? item.pnx.addata.btitle[0] : '';
+        const author = item.pnx.addata.au ? item.pnx.addata.au[0] : '';
+        const ti = encodeURIComponent(`ti=${title}`);
+        const au = encodeURIComponent(`au=${author}`);
+        return {
+          href: `${config.values.baseUrls.ezborrow}?query=${ti}+and+${au}`,
+          label: 'Request E-ZBorrow',
+        };
+      },
+      ill: ({ item, config }) => ({
+        href: `${config.values.baseUrls.ill}?${item.delivery.GetIt2.link.match(/resolve?(.*)/)}`,
+        label: 'Request ILL',
+      }),
+      login: () => ({
+        label: 'Login to see request options',
+        action: ($injector) => $injector.get('customLoginService').login(),
+      }),
+    },
+}
+```
+
+### `config.showButtons`
+
+Keys refer to `buttonIds`. Values are pure functions which return a boolean.
+
+Functions take the following named parameters via a POJO:
+* `user`: `Object` representation of a PDS user as taken from the `primoExploreCustomLoginService`. `undefined` if when user is not logged in, or the optional peer dependency has not been installed. `null` if a user is logged in, but the PDS API fetch failed.
+* `item`: `$ctrl.item` object from the `<prm-location-items>` component.
+* `config`: The configuration object itself for internal references.
+
+
+```js
+{
+  showButtons: {
+    ezborrow: ({ user, item, config }) => {
+      if (!user) return false;
+      const isBook = ['BOOK', 'BOOKS'].some(type => item.pnx.addata.ristype.indexOf(type) > -1);
+      return isBook && config.values.authorizedStatuses.ezborrow.indexOf(user['bor-status']) > -1;
+    },
+    ill: ({ user, item, config }) => {
+      if (!user) return false;
+      const ezborrow = config.showButtons.ezborrow({ user, item, config });
+      return !ezborrow && config.values.authorizedStatuses.ill.indexOf(user['bor-status']) > -1;
+    },
+    login: ({ user }) => user !== undefined,
+  }
 }
 ```
 
@@ -145,8 +183,7 @@ Determines whether to hide default buttons/text on a per-item basis. By default,
 
 A function which takes the following named parameters via a POJO:
 * `user`: `Object` representation of a PDS user as taken from the `primoExploreCustomLoginService`. `undefined` if when user is not logged in, or the optional peer dependency has not been installed. `null` if a user is logged in, but the PDS API fetch failed.
-* `items`: An array of holdings data. `$ctrl.currLoc.items` from the `<prm-location-items>` component.
-* `item`: Record data. `$ctrl.item` object from the `<prm-location-items>` component.
+* `items`: the array of items in `$ctrl.currLoc.items` from the `<prm-location-items>` component.
 * `config`: The configuration object itself for internal references.
 
 Functions should have no side-effects and return an `Array` of `Boolean`s that correspond to each element in `items`. For example, to hide the default request actions of only the second of three holdings, return `[false, true, false]`.
@@ -169,9 +206,9 @@ Functions should have no side-effects and return an `Array` of `Boolean`s that c
 }
 ```
 
-### `config.showCustomRequests` (optional)
+### `config.hideCustomRequest` (optional)
 
-Determines whether to show the *custom* buttons/text on a per-holding basis. By default, shows all.
+Link `config.hideDefaultRequest`, except determines whether to hide the *custom* buttons/text on a per-item basis.
 
 Keys refer to `buttonIds`.
 
@@ -184,20 +221,11 @@ Each function takes the following named parameters via a POJO:
 Functions should have no side-effects and return an `Array` of `Boolean`s that correspond to each element in `items`. For example, to show the custom request actions for only the second of three holdings, return `[false, true, false]`.
 
 ```js
-showCustomRequests: {
-  login: ({ user, items }) => items.map(() => user === undefined),
-  afc: ({ item, items, config, user}) => {
-    if (!user) return items.map(() => false);
-    const afcEligible = config.values.authorizedStatuses.afc.indexOf(user['bor-status']) > -1;
-    const isBAFCMainCollection = item.delivery.holding.some(({ subLocation, libraryCode}) => {
-      return libraryCode === "BAFC" && subLocation === "Main Collection";
-    });
-
-    return items.map(() => afcEligible && isBAFCMainCollection);
-  }
-},
+{
+  hideCustomRequest: props => props.config.hideDefaultRequest(props).map(boolean => !boolean)
+}
 ```
 
 ### `config.values` (optional)
 
-A dictionary of arbitrary values to be referred to within your functions. This is useful for more complex logic for which you may want to build unit tests, or reuse in multiple functions.
+A dictionary of arbitrary values to be referred to within your functions. This is useful for more complex logic that you may want to test against, or reuse in multiple functions.

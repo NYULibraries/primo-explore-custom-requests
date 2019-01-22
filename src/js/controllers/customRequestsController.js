@@ -7,9 +7,10 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     event.stopPropagation();
     href && $window.open(href);
     action && action($injector);
-    !(href || action) && console.warn(`primo-explore-custom-requests: Button "${label}" has not been assigned either an 'action' or 'href' property`);
+    !(href || action) && console.warn(`Link ${label} has not been assigned either an 'action' or 'href' property`);
   };
 
+<<<<<<< HEAD
   ctrl.hideAllRequests = () => {
     const $els = angular.element($window.document).queryAll('prm-location-items .md-list-item-text');
 
@@ -26,12 +27,20 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
   ctrl.revealCustomRequest = (id, idx) => {
     const $el = angular.element($window.document).queryAll(`.custom-request-${id}`)[idx];
     $el && $el.parent().css({ display: 'block' });
+=======
+  ctrl.cssCustomRequest = css => idx => {
+    const $el = angular.element($window.document).queryAll('prm-location-item-after')[idx];
+    $el ? $el.css(css) : null;
   };
 
-  ctrl.revealDivider = (id, idx) => {
-    const $el = angular.element($window.document).queryAll(`.custom-request-${id}`)[idx];
-    $el && $el.parent().query('.skewed-divider').css({ display: 'block' });
+  ctrl.cssRequest = css => idx => {
+    const $el = angular.element($window.document).queryAll('prm-location-items .md-list-item-text')[idx];
+    $el ? $el.children().eq(2).css(css) : null;
+>>>>>>> master
   };
+
+  ctrl.hideRequest = ctrl.cssRequest({ display: 'none' });
+  ctrl.hideCustomRequest = ctrl.cssCustomRequest({ display: 'none' });
 
   ctrl.revealNoButtonText = idx => {
     const $el = angular.element($window.document).queryAll(`.custom-requests-empty`)[idx];
@@ -39,6 +48,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
   };
 
   ctrl.setButtonsInState = () => {
+<<<<<<< HEAD
     let loggedIn, promise;
     if (ctrl.customLoginService) {
       loggedIn = ctrl.customLoginService.isLoggedIn;
@@ -46,8 +56,14 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
       // For delayed PDS testing: (first place store = {} outside scope)
       // const delay = (t, v) => new Promise((res) => setTimeout(res.bind(null, v), t));
       // promise = loggedIn ? (store.user && Promise.resolve(store.user)) || delay(3000, {['bor-status']: '50' }).then((user) => { store.user = user; return user; }) : Promise.resolve(undefined);
+=======
+    const loggedIn = ctrl.customLoginService ? ctrl.customLoginService.isLoggedIn : undefined;
+
+    let promise;
+    if (loggedIn) {
+      promise = ctrl.customLoginService.fetchPDSUser();
+>>>>>>> master
     } else {
-      loggedIn = false;
       promise = Promise.resolve(undefined);
     }
 
@@ -55,11 +71,17 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     const { item } = stateService.getState();
     return promise
       .then(user => {
+<<<<<<< HEAD
         const { buttonIds, buttonGenerators } = config;
 
+=======
+        const item = ctrl.parentCtrl.item;
+        const { buttonIds, showButtons, buttonGenerators } = config;
+>>>>>>> master
         const buttons = buttonIds.reduce((arr, id) => {
-          const buttonGenerator = buttonGenerators[id];
-          return [ ...arr, { id, ...buttonGenerator({ item, config }) } ];
+          const [showButton, buttonGenerator] = [showButtons, buttonGenerators].map(fxn => fxn[id]);
+          const show = showButton({ config, user, item });
+          return arr.concat(show ? [ buttonGenerator({ item, config }) ] : []);
         }, []);
 
         stateService.setState({ buttons, user });
@@ -71,6 +93,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
   };
 
   ctrl.refreshControllerValues = () => {
+<<<<<<< HEAD
     const { user, userFailure, buttons, loggedIn } = stateService.getState();
     Object.assign(ctrl, {
       user, userFailure, buttons, loggedIn,
@@ -108,6 +131,11 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
       if (list.length === 0 && config.hideDefaultRequests({ item, items, user, config })[holdingIdx]) {
         ctrl.revealNoButtonText(holdingIdx);
       }
+=======
+    $scope.$applyAsync(() => {
+      const { user, userFailure, buttons, loggedIn } = stateService.getState();
+      Object.assign(ctrl, { user, userFailure, buttons, loggedIn });
+>>>>>>> master
     });
   };
 
@@ -130,6 +158,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
   ctrl.$onInit = () => {
     ctrl.customLoginService = $injector.has('primoExploreCustomLoginService') && $injector.get('primoExploreCustomLoginService');
+<<<<<<< HEAD
     const { currLoc, item } = ctrl.parentCtrl;
     const { items } = currLoc;
 
@@ -143,6 +172,19 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
         config.hideDefaultRequests(props).forEach((toHide, idx) => !toHide ? ctrl.revealRequest(idx) : null);
         ctrl.DOMRefresh();
+=======
+
+    const stateItems = stateService.getState().items;
+    if (stateItems !== ctrl.parentCtrl.currLoc.items) {
+      stateService.setState({ items: ctrl.parentCtrl.currLoc.items });
+
+      ctrl.setButtonsInState().then(() => {
+        const { hideCustomRequest, hideDefaultRequest } = config;
+        const { items, user } = stateService.getState();
+        const props = { config, items, user };
+        hideDefaultRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideRequest(idx) : null);
+        hideCustomRequest(props).forEach((toHide, idx) => toHide ? ctrl.hideCustomRequest(idx) : null);
+>>>>>>> master
       });
     }
   };
