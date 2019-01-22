@@ -1,16 +1,11 @@
 <div layout="row" layout-align="center center">
-  <div layout="row" layout-align="center center" ng-repeat="button in $ctrl.buttons" style="display:none;">
-    <button class="button-as-link md-button md-primoExplore-theme md-ink-ripple custom-request-{{ button.id }}"
-      type="button"
-      ng-click="$ctrl.handleClick($event, button)"
-      aria-label="Type"
-      ><span>{{ button.label }}</span>
+  <div layout="row" layout-align="center center" ng-repeat="button in $ctrl.buttons">
+    <button class="button-as-link md-button md-primoExplore-theme md-ink-ripple" type="button" ng-click="$ctrl.handleClick($event, button)"
+      aria-label="Type"><span>{{ button.label }}</span>
     </button>
     <div class="skewed-divider" ng-if="!$last"></div>
   </div>
-  <div>
-    <span ng-if="$ctrl.customLoginService && $ctrl.loggedIn && !$ctrl.user && !$ctrl.userFailure">{{ $ctrl.userLoadingText }}</span>
-    <span class="custom-request-user-failure" ng-if="$ctrl.customLoginService && $ctrl.userFailure">{{ $ctrl.userFailureText }}</span>
-    <span class="custom-requests-empty" style="display:none" ng-if="!$ctrl.userFailure">{{ $ctrl.noButtonsText }}</span>
-  </div>
+  <span ng-if="$ctrl.customLoginService && $ctrl.loggedIn && !$ctrl.user && !$ctrl.userFailure">Retrieving request options...</span>
+  <span ng-if="$ctrl.customLoginService && $ctrl.userFailure">Unable to retrieve request options</span>
+  <span ng-if="$ctrl.buttons && $ctrl.buttons.length === 0">{{ $ctrl.noButtonsText }}</span>
 </div>
