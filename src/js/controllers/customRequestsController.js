@@ -1,4 +1,4 @@
-const store = {};
+// const store = {};
 prmLocationItemAfterController.$inject = ['$window', '$scope', '$injector', 'customRequestsStateService', 'customRequestsConfigService', '$timeout'];
 export default function prmLocationItemAfterController($window, $scope, $injector, stateService, config, $timeout) {
   const ctrl = this;
@@ -45,8 +45,8 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
       loggedIn = ctrl.customLoginService.isLoggedIn;
       promise = loggedIn ? ctrl.customLoginService.fetchPDSUser() : Promise.resolve(undefined);
       // For delayed PDS testing: (first place store = {} outside scope)
-      const delay = (t, v) => new Promise((res) => setTimeout(res.bind(null, v), t));
-      promise = loggedIn ? (store.user && Promise.resolve(store.user)) || delay(3000, {['bor-status']: '50' }).then((user) => { store.user = user; return user; }) : Promise.resolve(undefined);
+      // const delay = (t, v) => new Promise((res) => setTimeout(res.bind(null, v), t));
+      // promise = loggedIn ? (store.user && Promise.resolve(store.user)) || delay(3000, {['bor-status']: '50' }).then((user) => { store.user = user; return user; }) : Promise.resolve(undefined);
     } else {
       loggedIn = false;
       promise = Promise.resolve(undefined);
@@ -163,12 +163,12 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     const { items, revealTracking } = stateService.getState();
 
     // if the items change
-    if (JSON.stringify(ctrl.state.items) !== JSON.stringify(items)) {
+    ctrl.localItems = ctrl.localItems || JSON.stringify(items);
+    if (JSON.stringify(ctrl.localItems) !== JSON.stringify(items)) {
       // if revealTracking hasn't been reset yet
       if (ctrl.revealTracking.id === revealTracking.id) {
         // reset revealTracking contents
         ctrl.revealTracking = stateService.setState({ revealTracking: { ...Object.keys(revealTracking).reduce((res, key) => ({ ...res, [key]: undefined }), {}), id: revealTracking.id + 1 } }).revealTracking;
-        console.log(Object.freeze(angular.merge({}, ctrl.revealTracking)));
       // otherwise, just use current serviceState
       } else {
         ctrl.revealTracking = revealTracking;
