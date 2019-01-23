@@ -178,7 +178,12 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
   ctrl.$doCheck = () => {
     const serviceState = stateService.getState();
-    ctrl.state = ctrl.state || serviceState;
+
+    if (ctrl.state === undefined) {
+      ctrl.state = serviceState;
+      ctrl.refreshControllerValues();
+    }
+
     if (ctrl.state !== serviceState) {
       ctrl.checkRevealTracking();
       ctrl.state = stateService.getState();
