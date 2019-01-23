@@ -114,14 +114,12 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
   ctrl.DOMRefresh = () => {
     $scope.$applyAsync(() => {
       ctrl.refreshControllerValues();
+      // wrapped in $timeout because DOM updates after $digest completes.
+      // $timeout ensures that this occurs after DOM update, during the subsequent $digest cycle.
+      $timeout(() => {
+        ctrl.refreshReveals();
+      });
     });
-
-    $timeout(() => {
-      // wrapped in $timeout because DOM must update with above $applyAsync before manual reveal process.
-      // Because digest cycle is ~10ms, this will more likely ensure the DOM manipulations happen
-      // after refreshControllerValues + DOM updates are complete.
-      ctrl.refreshReveals();
-    }, 100);
   };
 
   ctrl.$postLink = () => {
@@ -149,7 +147,12 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
   ctrl.$doCheck = () => {
     const serviceState = stateService.getState();
-    ctrl.state = ctrl.state || serviceState;
+
+    if (ctrl.state === undefined) {
+      ctrl.state = serviceState;
+      ctrl.refreshControllerValues();
+    }
+
     if (ctrl.state !== serviceState) {
       ctrl.state = stateService.getState();
       ctrl.DOMRefresh();
