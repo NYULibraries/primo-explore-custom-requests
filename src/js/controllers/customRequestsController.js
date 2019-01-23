@@ -1,7 +1,9 @@
 // const store = {};
-prmLocationItemAfterController.$inject = ['$window', '$scope', '$injector', 'customRequestsStateService', 'customRequestsConfigService', '$timeout'];
-export default function prmLocationItemAfterController($window, $scope, $injector, stateService, config, $timeout) {
+prmLocationItemAfterController.$inject = ['$window', '$scope', '$injector', 'customRequestsStateService', 'customRequestsConfigService', '$timeout', '$filter'];
+export default function prmLocationItemAfterController($window, $scope, $injector, stateService, config, $timeout, $filter) {
   const ctrl = this;
+
+  ctrl.translate = original => original.replace(/\{(.+?)\}/g, (match, p1) => $filter('translate')(p1));
 
   ctrl.handleClick = (event, { action, href, label }) => {
     event.stopPropagation();

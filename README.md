@@ -60,7 +60,6 @@ If using `<primo-explore-custom-login>`, be sure to configure this as well accor
 
 ### `config.buttonIds`
 
-*Note*: Has access to custom backoffice values via `{backoffice.key.value}` syntax:
 #### Example
 ```js
 {
