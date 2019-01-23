@@ -163,11 +163,12 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     const { items, revealTracking } = stateService.getState();
 
     // if the items change
-    if (ctrl.state.items !== items || ctrl.state.items.length !== items.length) {
+    if (JSON.stringify(ctrl.state.items) !== JSON.stringify(items)) {
       // if revealTracking hasn't been reset yet
       if (ctrl.revealTracking.id === revealTracking.id) {
         // reset revealTracking contents
         ctrl.revealTracking = stateService.setState({ revealTracking: { ...Object.keys(revealTracking).reduce((res, key) => ({ ...res, [key]: undefined }), {}), id: revealTracking.id + 1 } }).revealTracking;
+        console.log(Object.freeze(angular.merge({}, ctrl.revealTracking)));
       // otherwise, just use current serviceState
       } else {
         ctrl.revealTracking = revealTracking;
