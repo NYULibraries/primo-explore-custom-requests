@@ -23,6 +23,11 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     $el && $el.children().eq(2).css({ display: 'flex' });
   };
 
+  ctrl.hideRequest = idx => {
+    const $el = angular.element($window.document).queryAll('prm-location-items .md-list-item-text')[idx];
+    $el && $el.children().eq(2).css({ display: 'none' });
+  };
+
   ctrl.revealCustomRequest = (id, idx) => {
     const $el = angular.element($window.document).queryAll(`.custom-request-${id}`)[idx];
     $el && $el.parent().css({ display: 'block' });
@@ -45,7 +50,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
       promise = loggedIn ? ctrl.customLoginService.fetchPDSUser() : Promise.resolve(undefined);
       // For delayed PDS testing: (first place store = {} outside scope)
       // const delay = (t, v) => new Promise((res) => setTimeout(res.bind(null, v), t));
-      // promise = loggedIn ? (store.user && Promise.resolve(store.user)) || delay(3000, {['bor-status']: '50' }).then((user) => { store.user = user; return user; }) : Promise.resolve(undefined);
+      // promise = loggedIn ? (store.user && Promise.resolve(store.user)) || delay(3000, {['bor-status']: '20' }).then((user) => { store.user = user; return user; }) : Promise.resolve(undefined);
     } else {
       loggedIn = false;
       promise = Promise.resolve(undefined);
@@ -122,6 +127,8 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     });
   };
 
+  ctrl.getCurrLocId = () => `${ctrl.parentCtrl.loc.location.mainLocation}${ctrl.parentCtrl.loc.location.subLocationCode}`;
+
   ctrl.$postLink = () => {
     ctrl.hideAllRequests();
   };
@@ -142,7 +149,11 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
         config.hideDefaultRequests(props).forEach((toHide, idx) => !toHide ? ctrl.revealRequest(idx) : null);
         ctrl.DOMRefresh();
       });
+
     }
+
+    ctrl.initCurrLocId = ctrl.getCurrLocId();
+    stateService.setState({ initialized: { [ctrl.initCurrLocId]: true } });
   };
 
   ctrl.$doCheck = () => {
@@ -157,5 +168,14 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
       ctrl.state = stateService.getState();
       ctrl.DOMRefresh();
     }
+
+    if (serviceState.initialized && !serviceState.initialized[ctrl.getCurrLocId()]) {
+      ctrl.$onInit();
+      ctrl.$postLink();
+    }
+  };
+
+  ctrl.$onDestroy = () =>{
+    stateService.setState({ initialized: { [ctrl.initCurrLocId]: false } });
   };
 }
