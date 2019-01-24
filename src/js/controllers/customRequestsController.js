@@ -136,6 +136,8 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     const { currLoc, item } = ctrl.parentCtrl;
     const { items } = currLoc;
 
+    stateService.setState({ currLocId: ctrl.getCurrLocId() });
+
     const { items: stateItems, item: stateItem } = stateService.getState();
     if (stateItems !== items || stateItem !== item) {
       stateService.setState({ items, item });
@@ -147,11 +149,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
         config.hideDefaultRequests(props).forEach((toHide, idx) => !toHide ? ctrl.revealRequest(idx) : null);
         ctrl.DOMRefresh();
       });
-
     }
-
-    ctrl.initCurrLocId = ctrl.getCurrLocId();
-    stateService.setState({ initialized: { [ctrl.initCurrLocId]: true } });
   };
 
   ctrl.$doCheck = () => {
@@ -167,13 +165,9 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
       ctrl.DOMRefresh();
     }
 
-    if (serviceState.initialized && !serviceState.initialized[ctrl.getCurrLocId()]) {
+    if (stateService.getState().currLocId !== ctrl.getCurrLocId()) {
       ctrl.$onInit();
       ctrl.$postLink();
     }
-  };
-
-  ctrl.$onDestroy = () =>{
-    stateService.setState({ initialized: { [ctrl.initCurrLocId]: false } });
   };
 }

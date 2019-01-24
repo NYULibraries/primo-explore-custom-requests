@@ -13,9 +13,9 @@ export default function primoExploreCustomRequestsConfigService(config, $filter)
     config,
     {
       buttonIds: config.buttonIds,
-      noButtonsText: config.noButtonsText || 'Request not available',
-      userFailureText: config.userFailureText || 'Unable to retrieve request options',
-      userLoadingText: config.userLoadingText || 'Retrieving request options...',
+      noButtonsText: config.noButtonsText === undefined ? 'Request not available' : config.noButtonsText,
+      userFailureText: config.userFailureText === undefined ? 'Unable to retrieve request options' : config.userFailureText,
+      userLoadingText: config.userLoadingText === undefined ? 'Retrieving request options...' : config.userLoadingText,
     }
   );
 
