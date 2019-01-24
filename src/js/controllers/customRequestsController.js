@@ -1,4 +1,3 @@
-// const store = {};
 prmLocationItemAfterController.$inject = ['$window', '$scope', '$injector', 'customRequestsStateService', 'customRequestsConfigService', '$timeout', '$filter'];
 export default function prmLocationItemAfterController($window, $scope, $injector, stateService, config, $timeout, $filter) {
   const ctrl = this;
@@ -16,7 +15,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     const $els = angular.element($window.document).queryAll('prm-location-items .md-list-item-text');
 
     Array.from($els).forEach(($el) => {
-      $el.children().eq(2).css({display: 'none' });
+      $el.children().eq(2).css({ display: 'none' });
     });
   };
 
@@ -32,7 +31,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
   ctrl.revealCustomRequest = (id, idx) => {
     const $el = angular.element($window.document).queryAll(`.custom-request-${id}`)[idx];
-    $el && $el.parent().css({ display: 'block' });
+    $el && $el.parent().css({ display: 'flex' });
   };
 
   ctrl.revealDivider = (id, idx) => {
@@ -50,9 +49,6 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     if (ctrl.customLoginService) {
       loggedIn = ctrl.customLoginService.isLoggedIn;
       promise = loggedIn ? ctrl.customLoginService.fetchPDSUser() : Promise.resolve(undefined);
-      // For delayed PDS testing: (first place store = {} outside scope)
-      // const delay = (t, v) => new Promise((res) => setTimeout(res.bind(null, v), t));
-      // promise = loggedIn ? (store.user && Promise.resolve(store.user)) || delay(3000, {['bor-status']: '20' }).then((user) => { store.user = user; return user; }) : Promise.resolve(undefined);
     } else {
       loggedIn = false;
       promise = Promise.resolve(undefined);
@@ -66,7 +62,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
         const buttons = buttonIds.reduce((arr, id) => {
           const buttonGenerator = buttonGenerators[id];
-          return [ ...arr, { id, ...buttonGenerator({ item, config }) } ];
+          return [...arr, { id, ...buttonGenerator({ item, config }) }];
         }, []);
 
         stateService.setState({ buttons, user });
