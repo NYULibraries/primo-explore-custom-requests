@@ -1,7 +1,9 @@
 // const store = {};
-prmLocationItemAfterController.$inject = ['$window', '$scope', '$injector', 'customRequestsStateService', 'customRequestsConfigService', '$timeout'];
-export default function prmLocationItemAfterController($window, $scope, $injector, stateService, config, $timeout) {
+prmLocationItemAfterController.$inject = ['$window', '$scope', '$injector', 'customRequestsStateService', 'customRequestsConfigService', '$timeout', '$filter'];
+export default function prmLocationItemAfterController($window, $scope, $injector, stateService, config, $timeout, $filter) {
   const ctrl = this;
+
+  ctrl.translate = original => original.replace(/\{(.+?)\}/g, (match, p1) => $filter('translate')(p1));
 
   ctrl.handleClick = (event, { action, href, label }) => {
     event.stopPropagation();
@@ -21,6 +23,11 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
   ctrl.revealRequest = idx => {
     const $el = angular.element($window.document).queryAll('prm-location-items .md-list-item-text')[idx];
     $el && $el.children().eq(2).css({ display: 'flex' });
+  };
+
+  ctrl.hideRequest = idx => {
+    const $el = angular.element($window.document).queryAll('prm-location-items .md-list-item-text')[idx];
+    $el && $el.children().eq(2).css({ display: 'none' });
   };
 
   ctrl.revealCustomRequest = (id, idx) => {
@@ -45,7 +52,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
       promise = loggedIn ? ctrl.customLoginService.fetchPDSUser() : Promise.resolve(undefined);
       // For delayed PDS testing: (first place store = {} outside scope)
       // const delay = (t, v) => new Promise((res) => setTimeout(res.bind(null, v), t));
-      // promise = loggedIn ? (store.user && Promise.resolve(store.user)) || delay(3000, {['bor-status']: '50' }).then((user) => { store.user = user; return user; }) : Promise.resolve(undefined);
+      // promise = loggedIn ? (store.user && Promise.resolve(store.user)) || delay(3000, {['bor-status']: '20' }).then((user) => { store.user = user; return user; }) : Promise.resolve(undefined);
     } else {
       loggedIn = false;
       promise = Promise.resolve(undefined);
@@ -114,15 +121,15 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
   ctrl.DOMRefresh = () => {
     $scope.$applyAsync(() => {
       ctrl.refreshControllerValues();
+      // wrapped in $timeout because DOM updates after $digest completes.
+      // $timeout ensures that this occurs after DOM update, during the subsequent $digest cycle.
+      $timeout(() => {
+        ctrl.refreshReveals();
+      });
     });
-
-    $timeout(() => {
-      // wrapped in $timeout because DOM must update with above $applyAsync before manual reveal process.
-      // Because digest cycle is ~10ms, this will more likely ensure the DOM manipulations happen
-      // after refreshControllerValues + DOM updates are complete.
-      ctrl.refreshReveals();
-    }, 100);
   };
+
+  ctrl.getCurrLocId = () => `${ctrl.parentCtrl.loc.location.mainLocation}${ctrl.parentCtrl.loc.location.subLocationCode}`;
 
   ctrl.$postLink = () => {
     ctrl.hideAllRequests();
@@ -144,15 +151,33 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
         config.hideDefaultRequests(props).forEach((toHide, idx) => !toHide ? ctrl.revealRequest(idx) : null);
         ctrl.DOMRefresh();
       });
+
     }
+
+    ctrl.initCurrLocId = ctrl.getCurrLocId();
+    stateService.setState({ initialized: { [ctrl.initCurrLocId]: true } });
   };
 
   ctrl.$doCheck = () => {
     const serviceState = stateService.getState();
-    ctrl.state = ctrl.state || serviceState;
+
+    if (ctrl.state === undefined) {
+      ctrl.state = serviceState;
+      ctrl.refreshControllerValues();
+    }
+
     if (ctrl.state !== serviceState) {
       ctrl.state = stateService.getState();
       ctrl.DOMRefresh();
     }
+
+    if (serviceState.initialized && !serviceState.initialized[ctrl.getCurrLocId()]) {
+      ctrl.$onInit();
+      ctrl.$postLink();
+    }
+  };
+
+  ctrl.$onDestroy = () =>{
+    stateService.setState({ initialized: { [ctrl.initCurrLocId]: false } });
   };
 }
