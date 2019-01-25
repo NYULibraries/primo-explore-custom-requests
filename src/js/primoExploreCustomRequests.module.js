@@ -1,3 +1,5 @@
+import 'ng-attr';
+
 import customRequestsController from './controllers/customRequestsController';
 import customRequestsConfigService from './services/customRequestsConfigService';
 import customRequestsStateService from './services/customRequestsStateService';
@@ -5,7 +7,9 @@ import customRequestsStateService from './services/customRequestsStateService';
 import customRequestsTemplate from '../html/custom_requests_template.html';
 
 angular
-  .module('primoExploreCustomRequests', [])
+  .module('primoExploreCustomRequests', [
+    'argshook.ngAttr'
+  ])
   .config(['$httpProvider', function ($httpProvider) {
     //Enable cross domain calls
     $httpProvider.defaults.useXDomain = true;

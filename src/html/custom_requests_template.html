@@ -4,10 +4,15 @@
       type="button"
       ng-click="$ctrl.handleClick($event, button)"
       aria-label="Type"
-      ><span>{{ button.label }}</span>
-      <prm-icon ng-if="button.href" external-link
-        icon-type="svg" svg-icon-set="action" icon-definition="ic_open_in_new_24px">
+    >
+      <prm-icon ng-if="button.prmIconBefore" ng-attr="{{ button.prmIconBefore.attributes }}"
+        icon-type="svg" svg-icon-set="{{ button.prmIconBefore.set }}" icon-definition="{{ button.prmIconBefore.icon }}"
+      >
       </prm-icon>
+      <span>{{ button.label }}</span>
+      <prm-icon ng-if="button.prmIconAfter" ng-attr="{{ button.prmIconAfter.attributes }}"
+        icon-type="svg" svg-icon-set="{{ button.prmIconAfter.set }}" icon-definition="{{ button.prmIconAfter.icon }}"
+      >
     </button>
     <div class="skewed-divider" ng-if="!$last" style="display:none;"></div>
   </div>
