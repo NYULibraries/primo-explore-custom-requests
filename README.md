@@ -80,35 +80,36 @@ Functions should be pure and return an `Object` with the following schema:
 * `label`: The button text
 * `href`: Opens link in a new window when button is clicked.
 * `action`: Performs custom JS, with access to angular's [`$injector`](https://docs.angularjs.org/api/auto/service/$injector) object.
+* `prmIconBefore`: Optionally adds icon before the action.
+* `prmIconAfter`: Optionally adds icon after the action.
+
+**`prmIcon` schema**: Object that defines the icon for the link. Must be chosen from <https://material.io/icons/>. Needs to specify both the name of the action "set" (see link) and the icon itself, in the form "ic_person_outline_24px". Note that all icons do not work so you may have to experiment some. You can also inspect existing Primo icons for insipration and consistency. "attributes" accepts an object which leverages existing attributes for better styling.
 
 ```js
 {
   label: `My button`
   href: `http://example.com`,
   action: ($injector) => $injector.get('$window').alert('The button was pushed!'),
+  prmIconBefore: {
+    set: "primo-ui",
+    icon: "sign-in",
+    attributes: { 'external-link': '' },
+  },
 }
 ```
+
 For example:
 ```js
 {
   buttonGenerators: {
-    ezborrow: ({ item, config }) => {
-      const title = item.pnx.addata.btitle ? item.pnx.addata.btitle[0] : '';
-      const author = item.pnx.addata.au ? item.pnx.addata.au[0] : '';
-      const ti = encodeURIComponent(`ti=${title}`);
-      const au = encodeURIComponent(`au=${author}`);
-      return {
-        href: `${config.values.baseUrls.ezborrow}?query=${ti}+and+${au}`,
-        label: 'Request E-ZBorrow',
-      };
-    },
     ill: ({ item, config }) => ({
       href: `${config.values.baseUrls.ill}?${item.delivery.GetIt2.link.match(/resolve?(.*)/)}`,
       label: 'Request ILL',
-    }),
-    login: () => ({
-      label: 'Login to see request options',
-      action: ($injector) => $injector.get('customLoginService').login(),
+      prmIconAfter: {
+        icon: "ic_open_in_new_24px",
+        set: "action",
+        attributes: { 'external-link': '' },
+      }
     }),
   },
 }
