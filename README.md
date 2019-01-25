@@ -93,7 +93,7 @@ Functions should be pure and return an `Object` with the following schema:
   prmIconBefore: {
     set: "primo-ui",
     icon: "sign-in",
-    attributes: { 'external-link': '' },
+    attributes: { 'custom-requests': '' },
   },
 }
 ```
@@ -108,7 +108,7 @@ For example:
       prmIconAfter: {
         icon: "ic_open_in_new_24px",
         set: "action",
-        attributes: { 'external-link': '' },
+        attributes: { 'custom-requests': '' },
       }
     }),
   },
