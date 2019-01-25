@@ -3289,6 +3289,11 @@ next-tick@1:
   resolved "https://registry.yarnpkg.com/next-tick/-/next-tick-1.0.0.tgz#ca86d1fe8828169b0120208e3dc8424b9db8342c"
   integrity sha1-yobR/ogoFpsBICCOPchCS524NCw=
 
+ng-attr@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/ng-attr/-/ng-attr-0.0.1.tgz#12fabe7a3cdc9e0561da49847e3b2d192cd81315"
+  integrity sha1-Evq+ejzcngVh2kmEfjstGSzYExU=
+
 nice-try@^1.0.4:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/nice-try/-/nice-try-1.0.5.tgz#a3378a7696ce7d223e88fc9b764bd7ef1089e366"
