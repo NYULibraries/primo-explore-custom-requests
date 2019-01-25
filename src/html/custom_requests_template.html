@@ -5,6 +5,9 @@
       ng-click="$ctrl.handleClick($event, button)"
       aria-label="Type"
       ><span>{{ button.label }}</span>
+      <prm-icon ng-if="button.href" external-link
+        icon-type="svg" svg-icon-set="action" icon-definition="ic_open_in_new_24px">
+      </prm-icon>
     </button>
     <div class="skewed-divider" ng-if="!$last" style="display:none;"></div>
   </div>
