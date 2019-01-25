@@ -1,0 +1,18 @@
+/* Imitates prm-service-button styles */
+button[class*="custom-request-"] {
+  padding: .5em .35em !important;
+}
+
+/* Automatically shrinks empties on large view, overriding flex-sm-30  */
+@media not all and (max-width: 599px) {
+  prm-location-item-after {
+    flex: 0 0 auto !important;
+  }
+}
+
+/* On the smaller views, restores flex-grow */
+@media (max-width: 599px) {
+  primo-explore-custom-requests {
+    flex: 1 1 100%;
+  }
+}

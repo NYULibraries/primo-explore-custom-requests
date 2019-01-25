@@ -75,12 +75,7 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
 
   ctrl.refreshControllerValues = () => {
     const { user, userFailure, buttons, loggedIn } = stateService.getState();
-    Object.assign(ctrl, {
-      user, userFailure, buttons, loggedIn,
-      userLoadingText: config.userLoadingText,
-      userFailureText: config.userFailureText,
-      noButtonsText: config.noButtonsText,
-    });
+    Object.assign(ctrl, { user, userFailure, buttons, loggedIn });
   };
 
   ctrl.refreshReveals = () => {
@@ -137,6 +132,11 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
     const { items } = currLoc;
 
     stateService.setState({ currLocId: ctrl.getCurrLocId() });
+    Object.assign(ctrl, {
+      userLoadingText: config.userLoadingText,
+      userFailureText: config.userFailureText,
+      noButtonsText: config.noButtonsText,
+    });
 
     const { items: stateItems, item: stateItem } = stateService.getState();
     if (stateItems !== items || stateItem !== item) {
@@ -153,18 +153,6 @@ export default function prmLocationItemAfterController($window, $scope, $injecto
   };
 
   ctrl.$doCheck = () => {
-    const serviceState = stateService.getState();
-
-    if (ctrl.state === undefined) {
-      ctrl.state = serviceState;
-      ctrl.refreshControllerValues();
-    }
-
-    if (ctrl.state !== serviceState) {
-      ctrl.state = stateService.getState();
-      ctrl.DOMRefresh();
-    }
-
     if (stateService.getState().currLocId !== ctrl.getCurrLocId()) {
       ctrl.$onInit();
       ctrl.$postLink();
