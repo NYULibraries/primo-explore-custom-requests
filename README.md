@@ -19,14 +19,14 @@ app
   // 1. Inject in the <prm-location-item-after> component of the DOM, which exists after each holding entry WITHIN a specific location.
   .component('prmLocationItemAfter', {
     template: `<primo-explore-custom-requests></primo-explore-custom-requests>`,
-      // 1a. Use this trick to implement the customization as a SIBLING of the item details, as opposed to its CHILD. This is a not a requirement, but is strongly recommended. Otherwise, styling of injected components will not match the styling of the elements it intends to replace.
+      // 1a. Use this trick to implement the customization as a SIBLING of the item details, as opposed to its CHILD. Otherwise, styling of injected components will not match the styling of the elements it intends to replace. The CSS that has been included with the module will assume that this has been implemented.
     controller: ['$element', function($element) {
       const ctrl = this;
       ctrl.$postLink = () => {
         const $target = $element.parent().query('div.md-list-item-text');
         const $el = $element.detach();
         $target.append($el);
-        $element.addClass('layout-align-center-center layout-row');
+        $element.addClass('layout-row flex-sm-30 flex-xs-100');
       };
     }]
   })
@@ -80,35 +80,36 @@ Functions should be pure and return an `Object` with the following schema:
 * `label`: The button text
 * `href`: Opens link in a new window when button is clicked.
 * `action`: Performs custom JS, with access to angular's [`$injector`](https://docs.angularjs.org/api/auto/service/$injector) object.
+* `prmIconBefore`: Optionally adds icon before the action.
+* `prmIconAfter`: Optionally adds icon after the action.
+
+**`prmIcon` schema**: Object that defines the icon for the link. Must be chosen from <https://material.io/icons/>. Needs to specify both the name of the action "set" (see link) and the icon itself, in the form "ic_person_outline_24px". Note that all icons do not work so you may have to experiment some. You can also inspect existing Primo icons for insipration and consistency. "attributes" accepts an object which leverages existing attributes for better styling.
 
 ```js
 {
   label: `My button`
   href: `http://example.com`,
   action: ($injector) => $injector.get('$window').alert('The button was pushed!'),
+  prmIconBefore: {
+    set: "primo-ui",
+    icon: "sign-in",
+    attributes: { 'custom-requests': '' },
+  },
 }
 ```
+
 For example:
 ```js
 {
   buttonGenerators: {
-    ezborrow: ({ item, config }) => {
-      const title = item.pnx.addata.btitle ? item.pnx.addata.btitle[0] : '';
-      const author = item.pnx.addata.au ? item.pnx.addata.au[0] : '';
-      const ti = encodeURIComponent(`ti=${title}`);
-      const au = encodeURIComponent(`au=${author}`);
-      return {
-        href: `${config.values.baseUrls.ezborrow}?query=${ti}+and+${au}`,
-        label: 'Request E-ZBorrow',
-      };
-    },
     ill: ({ item, config }) => ({
       href: `${config.values.baseUrls.ill}?${item.delivery.GetIt2.link.match(/resolve?(.*)/)}`,
       label: 'Request ILL',
-    }),
-    login: () => ({
-      label: 'Login to see request options',
-      action: ($injector) => $injector.get('customLoginService').login(),
+      prmIconAfter: {
+        icon: "ic_open_in_new_24px",
+        set: "action",
+        attributes: { 'custom-requests': '' },
+      }
     }),
   },
 }
@@ -206,3 +207,36 @@ The text to show when no buttons are rendered. By default, renders `Retrieving r
 ### `config.values` (optional)
 
 A dictionary of arbitrary functions and values to be referred to within your functions. This is useful for more complex logic that you may want to test against, or reuse in multiple functions.
+
+### Styles
+
+```scss
+/* Imitates prm-service-button styles */
+button[class*="custom-request-"] {
+  padding: .5em .35em !important;
+}
+
+/* Automatically shrinks empties on large view, overriding flex-sm-30  */
+@media not all and (max-width: 599px) {
+  prm-location-item-after {
+    flex: 0 0 auto !important;
+  }
+}
+
+/* On the smaller views, restores flex-grow */
+@media (max-width: 599px) {
+  primo-explore-custom-requests {
+    flex: 1 1 100%;
+  }
+}
+
+/* Useful for the 'attributes' in prmIconBefore/prmIconAfter to make it fit in button appropriately */
+[custom-requests] md-icon {
+  height: 15px;
+  width: 15px;
+  min-height: 15px;
+  min-width: 15px;
+  top: -1px;
+  position: relative;
+}
+```
