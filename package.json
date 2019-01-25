@@ -1,6 +1,6 @@
 {
   "name": "primo-explore-custom-requests",
-  "version": "0.0.11",
+  "version": "0.0.13",
   "description": "Customized item requests in Primo NUI",
   "main": "./dist/index.js",
   "scripts": {
