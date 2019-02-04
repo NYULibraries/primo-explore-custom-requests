@@ -52,10 +52,10 @@ If using `<primo-explore-custom-login>`, be sure to configure this as well accor
 `buttonIds`| `Array`| List of keys that for conditionally rendered `buttons`.
 `buttonGenerators` |`Object`| Key-value reference of functions used generate button properties for custom `buttons`.
 `noButtonsText`|`String` (optional) | Message to show if no buttons were generated from `buttonGenerators`, the default buttons are hidden, and the PDS user API didn't fail. Default: `Request not available`.
-`userFailureText`|`String` (optional) | Message to show if no buttons were generated from `buttonGenerators`. Default: `Request not available`.
-`userLoadingText`|`String` (optional) | Message to show if no buttons were generated from `buttonGenerators`. Default: `Request not available`.
-`hideDefaultRequests`| `Function` (optional) | Used to determine whether to hide any default, out-of-the-box request buttons for specific holdings within a location. Functions return an array of booleans. Default: hide none.
-`showCustomRequests`| `Object` (optional) | Used to determine whether to show a specific custom request button for specific holdings within a location. Functions return an array of booleans. Default: shows all.
+`userFailureText`|`String` (optional) | Message to show if the user API fetch failed. Default: `Unable to retrieve request options`.
+`userLoadingText`|`String` (optional) | Message to show while user API fetch is in-progress. Default: `Retrieving request options...`.
+`hideDefaultRequests`| `Function` (optional) | Used to determine whether to hide any default, out-of-the-box request buttons for specific holdings within a location. Functions return an array of booleans. Default: hide none (`[false, false, false...]`).
+`showCustomRequests`| `Object` (optional) | Used to determine whether to show a specific custom request button for specific holdings within a location. Functions return an array of booleans. Default: shows all (`[true, true, true...]`).
 `values` | `Object` (optional) | Dictionary used for arbitrary data and utility functions that may be used in other aspects of your configuration.
 
 ### `config.buttonIds`
