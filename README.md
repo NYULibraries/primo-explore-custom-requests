@@ -61,9 +61,10 @@ If using `<primo-explore-custom-login>`, be sure to configure this as well accor
 ### `config.buttonIds`
 
 #### Example
+
 ```js
 {
-  buttons: ['login', 'ezborrow', 'ill', '{item.request.custom}']
+  buttons: ['login', 'ezborrow', 'ill']
 }
 ```
 
@@ -186,7 +187,7 @@ The text to show when no buttons are rendered. By default, renders `Request not 
 
 The text to show when no buttons are rendered. By default, renders `Unable to retrieve request options`
 
-*Note*: Has access to custom backoffice values via `{backoffice.key.value}` syntax:
+*Note*: Has access to custom backoffice values via `{backoffice.key.value}` syntax.
 ```js
 {
   userFailureText: '{item.request.failure}',
