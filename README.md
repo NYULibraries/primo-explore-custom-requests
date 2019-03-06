@@ -18,15 +18,20 @@ let app = angular.module('viewCustom', [
 app
   // 1. Inject in the <prm-location-item-after> component of the DOM, which exists after each holding entry WITHIN a specific location.
   .component('prmLocationItemAfter', {
-    template: `<primo-explore-custom-requests></primo-explore-custom-requests>`,
+    template: `/*html*/ `
+      <primo-explore-custom-requests
+        layout="row"
+        layout-align="end center"
+        layout-wrap
+        flex-sm="30" flex-xs="100"
+      ></primo-explore-custom-requests>`,
       // 1a. Use this trick to implement the customization as a SIBLING of the item details, as opposed to its CHILD. Otherwise, styling of injected components will not match the styling of the elements it intends to replace. The CSS that has been included with the module will assume that this has been implemented.
-    controller: ['$element', function($element) {
+    controller: ['$element', function ($element) {
       const ctrl = this;
       ctrl.$postLink = () => {
         const $target = $element.parent().query('div.md-list-item-text');
-        const $el = $element.detach();
+        const $el = $element.query(`primo-explore-custom-requests`).detach();
         $target.append($el);
-        $element.addClass('layout-row flex-sm-30 flex-xs-100');
       };
     }]
   })
