@@ -23,9 +23,9 @@ app
         layout="row"
         layout-align="end center"
         layout-wrap
-        flex-sm="30" flex-xs="100"
+        flex-xs="100"
       ></primo-explore-custom-requests>`,
-      // 1a. Use this trick to implement the customization as a SIBLING of the item details, as opposed to its CHILD. Otherwise, styling of injected components will not match the styling of the elements it intends to replace. The CSS that has been included with the module will assume that this has been implemented.
+      // 1a. Use this trick to implement the customization as a SIBLING of the item details, as opposed to its CHILD. Otherwise, styling of injected components will not match the styling of the elements it intends to amend.
     controller: ['$element', function ($element) {
       const ctrl = this;
       ctrl.$postLink = () => {
@@ -220,20 +220,6 @@ A dictionary of arbitrary functions and values to be referred to within your fun
 /* Imitates prm-service-button styles */
 button[class*="custom-request-"] {
   padding: .5em .35em !important;
-}
-
-/* Automatically shrinks empties on large view, overriding flex-sm-30  */
-@media not all and (max-width: 599px) {
-  prm-location-item-after {
-    flex: 0 0 auto !important;
-  }
-}
-
-/* On the smaller views, restores flex-grow */
-@media (max-width: 599px) {
-  primo-explore-custom-requests {
-    flex: 1 1 100%;
-  }
 }
 
 /* Useful for the 'attributes' in prmIconBefore/prmIconAfter to make it fit in button appropriately */
