@@ -14,3 +14,9 @@ jobs:
         name: Run unit tests
         command: |
           docker-compose run test
+
+workflows:
+  version: 2
+  test:
+    jobs:
+    - run-unit-tests
