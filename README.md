@@ -1,6 +1,8 @@
 # primo-explore-custom-requests
 Customized item requests in Primo NUI
 
+[![CircleCI](https://circleci.com/gh/NYULibraries/primo-explore-custom-requests.svg?style=svg)](https://circleci.com/gh/NYULibraries/primo-explore-custom-requests)
+
 ## Usage
 **(Note: currently applies to alpha version; will likely change in v1.0)**
 
