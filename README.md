@@ -5,7 +5,6 @@ Customized item requests in Primo NUI
 [![Coverage Status](https://coveralls.io/repos/github/NYULibraries/primo-explore-custom-requests/badge.svg?branch=master)](https://coveralls.io/github/NYULibraries/primo-explore-custom-requests?branch=master)
 
 ## Usage
-**(Note: currently applies to alpha version; will likely change in v1.0)**
 
 1. Install
 `yarn add primo-explore-custom-requests --dev`
