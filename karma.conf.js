@@ -1,7 +1,7 @@
 const webpack = require('webpack');
 process.env.CHROME_BIN = require('puppeteer').executablePath();
 
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
     frameworks: ['jasmine'],
     reporters: [
@@ -25,13 +25,11 @@ module.exports = function(config) {
     webpack: {
       mode: 'development',
       module: {
-        rules: [
-          {
-            test: /\.js$/,
-            exclude: /node_modules/,
-            loader: 'babel-loader',
-          }
-        ]
+        rules: [{
+          test: /\.js$/,
+          exclude: /node_modules/,
+          loader: 'babel-loader',
+        }]
       },
       devtool: 'inline-source-map',
       externals: {
