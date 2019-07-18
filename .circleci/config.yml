@@ -15,8 +15,50 @@ jobs:
         command: |
           docker-compose run test
 
+  build-and-pack:
+    <<: *docker-defaults
+    steps:
+    - checkout
+    - setup_remote_docker
+    - run:
+        name: Builds package in Docker container and copies out
+        command: |
+          mdkir -p ~/app/output
+          docker-compose run pack
+          docker cp "$(docker ps -q -a -l -f name=pack)":/app/package.tgz ~/app/output
+    - store_artifacts:
+        path: output
+  publish-to-npm:
+    docker:
+    - image: circleci/node:lts
+    steps:
+    - checkout
+    - run:
+        name: Authenticate with NPM
+        command: |
+          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/app/.npmrc
+    - run:
+        name: Publish package
+        command: |
+          yarn publish
+
 workflows:
   version: 2
-  test:
+  test-build-and-pack:
     jobs:
     - run-unit-tests
+    - build-and-pack:
+        requires:
+        - run-unit-tests
+
+  test-and-deploy:
+    jobs:
+    - run-unit-tests
+    - publish-to-npm:
+        requires:
+          - run-unit-tests
+        filters:
+          tags:
+            only: /^v.*/
+          branches:
+            ignore: /.*/
