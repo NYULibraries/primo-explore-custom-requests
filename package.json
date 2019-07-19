@@ -23,7 +23,6 @@
   },
   "homepage": "https://github.com/NYULibraries/primo-explore-custom-requests#readme",
   "devDependencies": {
-    "@babel/cli": "7.5.0",
     "@babel/core": "7.5.0",
     "@babel/preset-env": "7.5.0",
     "angular": "^1.7.8",

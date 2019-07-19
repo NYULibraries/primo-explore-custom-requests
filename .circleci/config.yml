@@ -23,7 +23,7 @@ jobs:
     - run:
         name: Builds package in Docker container and copies out
         command: |
-          mdkir -p ~/app/output
+          mkdir -p ~/app/output
           docker-compose run pack
           docker cp "$(docker ps -q -a -l -f name=pack)":/app/package.tgz ~/app/output
     - store_artifacts:
