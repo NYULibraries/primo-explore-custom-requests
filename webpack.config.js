@@ -1,42 +1,26 @@
 const path = require('path');
-const merge = require('webpack-merge');
 
-const commonConfig = {
+const webpackConfig = {
   entry: {
     index: path.resolve(__dirname, 'src/index.js'),
   },
   module: {
     rules: [{
       test: /\.js$/,
-      loader: 'babel-loader'
+      loader: 'babel-loader',
+      exclude: /node_modules/
     }]
   },
   devtool: 'sourcemap',
-};
-
-const webConfig = {
-  target: 'web',
   output: {
-    filename: 'primoExploreCustomRequests.min.js',
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'index.js',
     library: 'primoExploreCustomRequests',
-    libraryTarget: 'var',
+    libraryTarget: 'umd',
+    libraryExport: 'default',
+    // see: https://github.com/webpack/webpack/issues/6522
+    globalObject: 'typeof self !== \'undefined\' ? self : this'
   },
 };
 
-const nodeConfig = {
-  target: 'node',
-  output: {
-    library: 'primoExploreCustomRequests',
-  },
-};
-
-module.exports = [
-  merge.smart(
-    commonConfig,
-    webConfig,
-  ),
-  merge.smart(
-    commonConfig,
-    nodeConfig
-  ),
-];
+module.exports = webpackConfig;
