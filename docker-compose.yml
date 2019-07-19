@@ -23,4 +23,4 @@ services:
   pack:
     build:
       context: .
-    command: yarn pack --filename /app/package.tgz
+    command: yarn publish-dry-run
