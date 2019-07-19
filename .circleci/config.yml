@@ -48,17 +48,25 @@ jobs:
 
 workflows:
   version: 2
-  test-build-and-deploy:
+  test-and-build:
     jobs:
     - run-unit-tests
     - build-and-pack:
         requires:
         - run-unit-tests
+  test-and-deploy:
+    jobs:
+    - run-unit-tests:
+        filters:
+          tags:
+            only: /.*/
+          branches:
+            ignore: /.*/
     - publish-to-npm:
         requires:
           - run-unit-tests
         filters:
           tags:
-            only: /.*/
+            only: /^v.*/
           branches:
             ignore: /.*/
