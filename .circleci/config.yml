@@ -48,7 +48,7 @@ jobs:
 
 workflows:
   version: 2
-  test-build-and-pack:
+  test-build-and-deploy:
     jobs:
     - run-unit-tests
     - build-and-pack:
@@ -59,6 +59,6 @@ workflows:
           - run-unit-tests
         filters:
           tags:
-            only: /^v.*/
+            only: /.*/
           branches:
             ignore: /.*/
