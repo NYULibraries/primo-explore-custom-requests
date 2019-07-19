@@ -54,10 +54,6 @@ workflows:
     - build-and-pack:
         requires:
         - run-unit-tests
-
-  test-and-deploy:
-    jobs:
-    - run-unit-tests
     - publish-to-npm:
         requires:
           - run-unit-tests
