@@ -1,2 +1,2 @@
-require('./js/primoExploreCustomRequests.module.js');
-module.exports = 'primoExploreCustomRequests';
+import './js/primoExploreCustomRequests.module.js';
+export default 'primoExploreCustomRequests';

@@ -38,6 +38,10 @@ jobs:
         command: |
           echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/app/.npmrc
     - run:
+        name: Install dependencies
+        command: |
+          yarn install --frozen-lockfile --ignore-optional
+    - run:
         name: Publish package
         command: |
           yarn publish

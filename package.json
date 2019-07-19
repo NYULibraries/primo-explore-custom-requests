@@ -1,7 +1,8 @@
 {
   "name": "primo-explore-custom-requests",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Customized item requests in Primo NUI",
+  "module": "./dist/index.js",
   "main": "./dist/index.js",
   "scripts": {
     "test": "NODE_ENV=test yarn karma start --browsers=ChromeHeadless --single-run",
@@ -43,8 +44,7 @@
     "puppeteer": "^1.13.0",
     "rimraf": "^2.6.3",
     "webpack": "^4.29.6",
-    "webpack-cli": "^3.2.3",
-    "webpack-merge": "^4.2.1"
+    "webpack-cli": "^3.2.3"
   },
   "dependencies": {
     "ng-attr": "^0.0.1"
