@@ -34,7 +34,7 @@ app
     }]
   })
   // 2. Optional: Inject the <primo-explore-custom-login> peer dependency in order to capture currently logged in user via PDS
-  .component('prmAuthenticationAfter', {
+  .component('prmUserAreaExpandableAfter', {
     template: `<primo-explore-custom-login></primo-explore-custom-login>`
   })
 ```
