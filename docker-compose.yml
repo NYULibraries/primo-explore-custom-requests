@@ -24,3 +24,10 @@ services:
     build:
       context: .
     command: yarn publish-dry-run
+  yarn:
+    image: node:10.15.1
+    working_dir: /app
+    entrypoint: ["yarn"]
+    volumes:
+      - ./:/app
+
