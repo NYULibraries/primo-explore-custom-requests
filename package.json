@@ -65,6 +65,7 @@
     "minimist": "^0.2.1",
     "elliptic": "^6.5.4",
     "lodash": "^4.17.19",
-    "https-proxy-agent": "^2.2.3"
+    "https-proxy-agent": "^2.2.3",
+    "acorn": "^7.1.1"
   }
 }
