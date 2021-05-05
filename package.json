@@ -53,5 +53,8 @@
   "peerDependencies": {},
   "optionalDependencies": {
     "eslint": "^6.2.1"
+  },
+  "resolutions": {
+    "xmlhttprequest-ssl": "^1.6.2"
   }
 }
