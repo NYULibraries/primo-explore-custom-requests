@@ -12,7 +12,7 @@ export default function customRequestsController($window, $scope, $injector, sta
   };
 
   ctrl.hideAllRequests = () => {
-    const $els = angular.element($window.document).queryAll('prm-location-items .md-list-item-text');
+    const $els = angular.element($window.document).find('prm-location-items .md-list-item-text');
 
     Array.from($els).forEach(($el) => {
       $el.children().eq(2).css({ display: 'none' });
@@ -20,27 +20,27 @@ export default function customRequestsController($window, $scope, $injector, sta
   };
 
   ctrl.revealRequest = idx => {
-    const $el = angular.element($window.document).queryAll('prm-location-items .md-list-item-text')[idx];
+    const $el = angular.element($window.document).find('prm-location-items .md-list-item-text')[idx];
     $el && $el.children().eq(2).css({ display: 'flex' });
   };
 
   ctrl.hideRequest = idx => {
-    const $el = angular.element($window.document).queryAll('prm-location-items .md-list-item-text')[idx];
+    const $el = angular.element($window.document).find('prm-location-items .md-list-item-text')[idx];
     $el && $el.children().eq(2).css({ display: 'none' });
   };
 
   ctrl.revealCustomRequest = (id, idx) => {
-    const $el = angular.element($window.document).queryAll(`.custom-request-${id}`)[idx];
+    const $el = angular.element($window.document).find(`.custom-request-${id}`)[idx];
     $el && $el.parent().css({ display: 'flex' });
   };
 
   ctrl.revealDivider = (id, idx) => {
-    const $el = angular.element($window.document).queryAll(`.custom-request-${id}`)[idx];
+    const $el = angular.element($window.document).find(`.custom-request-${id}`)[idx];
     $el && $el.parent().query('.skewed-divider').css({ display: 'block' });
   };
 
   ctrl.revealNoButtonText = idx => {
-    const $el = angular.element($window.document).queryAll(`.custom-requests-empty`)[idx];
+    const $el = angular.element($window.document).find(`.custom-requests-empty`)[idx];
     $el && $el.css({ display: 'block' });
   };
 
