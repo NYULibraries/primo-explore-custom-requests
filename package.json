@@ -48,7 +48,9 @@
     "webpack-cli": "^3.2.3"
   },
   "dependencies": {
-    "ng-attr": "^0.0.1"
+    "glob-parent": "^5.1.2",
+    "ng-attr": "^0.0.1",
+    "xmlhttprequest-ssl": "^1.6.2"
   },
   "peerDependencies": {},
   "optionalDependencies": {
