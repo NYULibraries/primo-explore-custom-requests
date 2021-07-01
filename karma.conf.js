@@ -7,7 +7,7 @@ module.exports = function (config) {
     client: { jasmine: { random: false } },
     frameworks: ['jasmine'],
     reporters: [
-      'spec',
+      'kjhtml',
       'junit',
       'coverage-istanbul',
       'coveralls'
