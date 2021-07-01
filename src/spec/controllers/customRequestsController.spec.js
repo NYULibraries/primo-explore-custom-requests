@@ -10,7 +10,7 @@ const configService = {
   userLoadingText: 'Loading user',
   userFailureText: 'User fetch failed',
   noButtonsText: 'No services',
-  hideDefaultRequests: jasmine.createSpy('config.hideDefaultRequests').and.returnValue([true, false]),
+  hideDefaultRequests: jasmine.createSpy('config.hideDefaultRequests').and.returnValue([true, true]),
 };
 
 describe('customRequestsController', () => {
